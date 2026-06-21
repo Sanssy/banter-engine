@@ -2,17 +2,6 @@ package opportunities
 
 import "github.com/DSanoussy/banter-engine/internal/model"
 
-const (
-	RankingOvertake     = "RankingOvertake"
-	EnteredTop3         = "EnteredTop3"
-	ExitedTop3          = "ExitedTop3"
-	LeaderUnderPressure = "LeaderUnderPressure"
-	LastPlaceLocked     = "LastPlaceLocked"
-	Nemesis             = "Nemesis"
-	Revenge             = "Revenge"
-	Dominance           = "Dominance"
-)
-
 type Opportunity struct {
 	Type   string
 	Actor  string

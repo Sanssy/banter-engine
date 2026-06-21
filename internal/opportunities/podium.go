@@ -2,8 +2,6 @@ package opportunities
 
 import "github.com/DSanoussy/banter-engine/internal/model"
 
-const PodiumFight = "PodiumFight"
-
 const maximumPodiumFightGap = 5
 
 func DetectPodiumFight(previous, current []model.Standing) []Opportunity {

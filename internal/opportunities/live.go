@@ -6,13 +6,6 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
 
-const (
-	MatchStarted        = "MatchStarted"
-	MatchEnded          = "MatchEnded"
-	ScoreChanged        = "ScoreChanged"
-	ImportantMatchEvent = "ImportantMatchEvent"
-)
-
 func DetectLiveUpdates(previous, current []matches.Match) []Opportunity {
 	previousByID := make(map[string]matches.Match, len(previous))
 	for _, match := range previous {

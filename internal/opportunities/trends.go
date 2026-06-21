@@ -7,12 +7,6 @@ import (
 )
 
 const (
-	ComebackSeason = "ComebackSeason"
-	FreeFall       = "FreeFall"
-	RunawayLeader  = "RunawayLeader"
-)
-
-const (
 	minimumRankSwing         = 3
 	minimumLeaderGapIncrease = 10
 )

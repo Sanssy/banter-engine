@@ -6,14 +6,6 @@ import (
 )
 
 const (
-	HugeUpset          = "HugeUpset"
-	EveryoneWasWrong   = "EveryoneWasWrong"
-	TheChosenOne       = "TheChosenOne"
-	AgainstTheCrowd    = "AgainstTheCrowd"
-	PredictionMassacre = "PredictionMassacre"
-)
-
-const (
 	homeOutcome = "home"
 	drawOutcome = "draw"
 	awayOutcome = "away"

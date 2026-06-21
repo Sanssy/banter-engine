@@ -7,11 +7,6 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
 )
 
-const (
-	HotStreak  = "HotStreak"
-	ColdStreak = "ColdStreak"
-)
-
 const minimumStreakLength = 5
 
 func DetectStreaks(history []forecasts.Forecast) []Opportunity {

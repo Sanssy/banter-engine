@@ -7,12 +7,6 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
 
-const (
-	NinetiethMinuteHeartbreak = "90thMinuteHeartbreak"
-	VARVictim                 = "VARVictim"
-	RedCardDisaster           = "RedCardDisaster"
-)
-
 func DetectHeartbreaks(previous, current matches.Match, forecasts []forecasts.Forecast) []Opportunity {
 	knownEvents := make(map[string]struct{}, len(previous.Events))
 	for _, event := range previous.Events {
