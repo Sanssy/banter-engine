@@ -11,7 +11,7 @@ const (
 	minimumLeaderGapIncrease = 10
 )
 
-func DetectRankingTrends(previous, current []model.Standing) []Opportunity {
+func detectRankingTrends(previous, current []model.Standing) []Opportunity {
 	previousByUserID := make(map[string]model.Standing, len(previous))
 	for _, standing := range previous {
 		previousByUserID[standing.UserID] = standing

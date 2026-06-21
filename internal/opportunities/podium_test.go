@@ -18,8 +18,8 @@ func TestDetectPodiumFight(t *testing.T) {
 	}
 	want := []Opportunity{{Type: PodiumFight, Actor: "Sanssy", Target: "William"}}
 
-	if got := DetectPodiumFight(previous, current); !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectPodiumFight() = %#v, want %#v", got, want)
+	if got := detectPodiumFight(previous, current); !reflect.DeepEqual(got, want) {
+		t.Fatalf("detectPodiumFight() = %#v, want %#v", got, want)
 	}
 }
 
@@ -33,7 +33,7 @@ func TestDetectPodiumFightDoesNotRepeatUnchangedFight(t *testing.T) {
 		{UserID: "fourth", Name: "Sanssy", Rank: 4, Points: 83},
 	}
 
-	if got := DetectPodiumFight(previous, current); len(got) != 0 {
-		t.Fatalf("DetectPodiumFight() returned %d opportunities, want 0", len(got))
+	if got := detectPodiumFight(previous, current); len(got) != 0 {
+		t.Fatalf("detectPodiumFight() returned %d opportunities, want 0", len(got))
 	}
 }

@@ -32,7 +32,7 @@ func DetectLiveUpdates(previous, current []matches.Match) []Opportunity {
 				Actor:  label,
 				Target: fmt.Sprintf("%d-%d", match.Score.Home, match.Score.Away),
 			})
-			detected = append(detected, DetectScoreEvents(old, match)...)
+			detected = append(detected, detectScoreEvents(old, match)...)
 		}
 
 		knownEvents := make(map[string]struct{}, len(old.Events))

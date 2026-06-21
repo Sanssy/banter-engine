@@ -4,7 +4,7 @@ import "github.com/DSanoussy/banter-engine/internal/model"
 
 const maximumPodiumFightGap = 5
 
-func DetectPodiumFight(previous, current []model.Standing) []Opportunity {
+func detectPodiumFight(previous, current []model.Standing) []Opportunity {
 	previousThird, hasPreviousThird := standingAtRank(previous, 3)
 	previousFourth, hasPreviousFourth := standingAtRank(previous, 4)
 	currentThird, hasCurrentThird := standingAtRank(current, 3)

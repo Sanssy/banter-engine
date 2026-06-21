@@ -61,9 +61,9 @@ func TestDetectRankingOvertakes(t *testing.T) {
 		{Type: RankingOvertake, Actor: "William", Target: "Killian"},
 	}
 
-	got := DetectRankingOvertakes(previous, current)
+	got := detectRankingOvertakes(previous, current)
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectRankingOvertakes() = %#v, want %#v", got, want)
+		t.Fatalf("detectRankingOvertakes() = %#v, want %#v", got, want)
 	}
 }
 
@@ -78,7 +78,7 @@ func TestDetectRankingOvertakesIgnoresUnchangedOrderAndNewUsers(t *testing.T) {
 		{UserID: "william", Name: "William", Rank: 3},
 	}
 
-	if got := DetectRankingOvertakes(previous, current); len(got) != 0 {
-		t.Fatalf("DetectRankingOvertakes() returned %d opportunities, want 0", len(got))
+	if got := detectRankingOvertakes(previous, current); len(got) != 0 {
+		t.Fatalf("detectRankingOvertakes() returned %d opportunities, want 0", len(got))
 	}
 }

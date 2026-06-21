@@ -6,7 +6,7 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
 
-func DetectScoreEvents(previous, current matches.Match) []Opportunity {
+func detectScoreEvents(previous, current matches.Match) []Opportunity {
 	if previous.Score == current.Score {
 		return nil
 	}

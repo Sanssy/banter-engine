@@ -9,7 +9,7 @@ import (
 
 const pointExplosionThreshold = 5
 
-type PointImpact struct {
+type pointImpact struct {
 	UserID         string
 	MatchID        string
 	PreviousPoints int
@@ -17,19 +17,19 @@ type PointImpact struct {
 	Delta          int
 }
 
-func CalculatePointImpacts(previous, current []forecasts.Forecast) []PointImpact {
+func calculatePointImpacts(previous, current []forecasts.Forecast) []pointImpact {
 	previousByForecast := make(map[string]forecasts.Forecast, len(previous))
 	for _, forecast := range previous {
 		previousByForecast[forecastKey(forecast)] = forecast
 	}
 
-	var impacts []PointImpact
+	var impacts []pointImpact
 	for _, forecast := range current {
 		old, existed := previousByForecast[forecastKey(forecast)]
 		if !existed || old.Points == forecast.Points {
 			continue
 		}
-		impacts = append(impacts, PointImpact{
+		impacts = append(impacts, pointImpact{
 			UserID:         forecast.UserID,
 			MatchID:        forecast.MatchID,
 			PreviousPoints: old.Points,
@@ -47,13 +47,13 @@ func CalculatePointImpacts(previous, current []forecasts.Forecast) []PointImpact
 }
 
 func DetectPointImpacts(previous, current []forecasts.Forecast) []Opportunity {
-	impacts := CalculatePointImpacts(previous, current)
+	impacts := calculatePointImpacts(previous, current)
 	if len(impacts) == 0 {
 		return nil
 	}
 
-	var biggestWinner *PointImpact
-	var biggestLoser *PointImpact
+	var biggestWinner *pointImpact
+	var biggestLoser *pointImpact
 	for i := range impacts {
 		impact := &impacts[i]
 		if impact.Delta > 0 && (biggestWinner == nil || impact.Delta > biggestWinner.Delta) {

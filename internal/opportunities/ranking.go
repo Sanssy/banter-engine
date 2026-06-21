@@ -2,21 +2,15 @@ package opportunities
 
 import "github.com/DSanoussy/banter-engine/internal/model"
 
-type Opportunity struct {
-	Type   string
-	Actor  string
-	Target string
-}
-
 func Detect(previous, current []model.Standing) []Opportunity {
 	if len(previous) == 0 || len(current) == 0 {
 		return nil
 	}
 
-	detected := DetectRankingOvertakes(previous, current)
+	detected := detectRankingOvertakes(previous, current)
 	detected = append(detected, detectTop3Changes(previous, current)...)
-	detected = append(detected, DetectPodiumFight(previous, current)...)
-	detected = append(detected, DetectRankingTrends(previous, current)...)
+	detected = append(detected, detectPodiumFight(previous, current)...)
+	detected = append(detected, detectRankingTrends(previous, current)...)
 
 	if opportunity, ok := detectLeaderUnderPressure(previous, current); ok {
 		detected = append(detected, opportunity)
@@ -28,7 +22,7 @@ func Detect(previous, current []model.Standing) []Opportunity {
 	return detected
 }
 
-func DetectRankingOvertakes(previous, current []model.Standing) []Opportunity {
+func detectRankingOvertakes(previous, current []model.Standing) []Opportunity {
 	previousByUserID := make(map[string]model.Standing, len(previous))
 	for _, standing := range previous {
 		previousByUserID[standing.UserID] = standing

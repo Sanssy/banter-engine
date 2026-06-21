@@ -2761,5 +2761,340 @@
       "ranking",
       "close"
     ]
+  },
+  {
+    "id": "PodiumFight",
+    "name": "Podium Fight",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Fourth place closes to within five points of the podium.",
+    "requiredData": [
+      "standings",
+      "previousStandings"
+    ],
+    "trigger": {
+      "maximumPointGap": 5,
+      "position": 4
+    },
+    "banterAngles": [
+      "podium_pressure",
+      "close_race"
+    ],
+    "relatedOpportunities": [
+      "PodiumGuardian",
+      "OnePointBehind"
+    ],
+    "tags": [
+      "ranking",
+      "podium"
+    ]
+  },
+  {
+    "id": "HugeUpset",
+    "name": "Huge Upset",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "The match favorite fails to win.",
+    "requiredData": [
+      "matchResults",
+      "quotations"
+    ],
+    "trigger": {
+      "favoriteDidNotWin": true
+    },
+    "banterAngles": [
+      "upset",
+      "favorite_failure"
+    ],
+    "relatedOpportunities": [
+      "UnderdogBeliever",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "predictions",
+      "upset"
+    ]
+  },
+  {
+    "id": "HotStreak",
+    "name": "Hot Streak",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "A player records at least five consecutive successful predictions.",
+    "requiredData": [
+      "forecastHistory"
+    ],
+    "trigger": {
+      "minimumConsecutiveSuccesses": 5
+    },
+    "banterAngles": [
+      "momentum",
+      "confidence"
+    ],
+    "relatedOpportunities": [
+      "ExactScoreMachine",
+      "PredictionKing"
+    ],
+    "tags": [
+      "predictions",
+      "streak"
+    ]
+  },
+  {
+    "id": "ColdStreak",
+    "name": "Cold Streak",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "A player records at least five consecutive failed predictions.",
+    "requiredData": [
+      "forecastHistory"
+    ],
+    "trigger": {
+      "minimumConsecutiveFailures": 5
+    },
+    "banterAngles": [
+      "bad_form",
+      "pressure"
+    ],
+    "relatedOpportunities": [
+      "ExactScoreDrought",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "streak"
+    ]
+  },
+  {
+    "id": "MatchStarted",
+    "name": "Match Started",
+    "category": "MatchEvents",
+    "severity": 1,
+    "description": "A match transitions from pre-match to live play.",
+    "requiredData": [
+      "matches",
+      "previousMatches"
+    ],
+    "trigger": {
+      "statusTransition": "live"
+    },
+    "banterAngles": [
+      "kickoff",
+      "anticipation"
+    ],
+    "relatedOpportunities": [
+      "GoalSwing"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "MatchEnded",
+    "name": "Match Ended",
+    "category": "MatchEvents",
+    "severity": 1,
+    "description": "A live match reaches full time.",
+    "requiredData": [
+      "matches",
+      "previousMatches"
+    ],
+    "trigger": {
+      "statusTransition": "fullTime"
+    },
+    "banterAngles": [
+      "final_whistle",
+      "result"
+    ],
+    "relatedOpportunities": [
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "full_time"
+    ]
+  },
+  {
+    "id": "ScoreChanged",
+    "name": "Score Changed",
+    "category": "MatchEvents",
+    "severity": 2,
+    "description": "The score of a live match changes.",
+    "requiredData": [
+      "matches",
+      "previousMatches"
+    ],
+    "trigger": {
+      "scoreChanged": true
+    },
+    "banterAngles": [
+      "score_update",
+      "reaction"
+    ],
+    "relatedOpportunities": [
+      "GoalSwing"
+    ],
+    "tags": [
+      "match",
+      "score"
+    ]
+  },
+  {
+    "id": "ImportantMatchEvent",
+    "name": "Important Match Event",
+    "category": "MatchEvents",
+    "severity": 2,
+    "description": "A new goal, booking, penalty, red card, or VAR event occurs.",
+    "requiredData": [
+      "matchEvents",
+      "previousMatchEvents"
+    ],
+    "trigger": {
+      "importantEventAdded": true
+    },
+    "banterAngles": [
+      "live_reaction",
+      "match_drama"
+    ],
+    "relatedOpportunities": [
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "event"
+    ]
+  },
+  {
+    "id": "BiggestWinner",
+    "name": "Biggest Winner",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "A player records the largest point gain in the latest update.",
+    "requiredData": [
+      "forecasts",
+      "previousForecasts"
+    ],
+    "trigger": {
+      "largestPointGain": true
+    },
+    "banterAngles": [
+      "winner",
+      "point_gain"
+    ],
+    "relatedOpportunities": [
+      "WeekendMaster",
+      "PointExplosion"
+    ],
+    "tags": [
+      "predictions",
+      "points"
+    ]
+  },
+  {
+    "id": "BiggestLoser",
+    "name": "Biggest Loser",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "A player records the largest point loss in the latest update.",
+    "requiredData": [
+      "forecasts",
+      "previousForecasts"
+    ],
+    "trigger": {
+      "largestPointLoss": true
+    },
+    "banterAngles": [
+      "loser",
+      "point_loss"
+    ],
+    "relatedOpportunities": [
+      "WeekendDisaster",
+      "PointExplosion"
+    ],
+    "tags": [
+      "predictions",
+      "points"
+    ]
+  },
+  {
+    "id": "PointExplosion",
+    "name": "Point Explosion",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "A player gains at least five points in one update.",
+    "requiredData": [
+      "forecasts",
+      "previousForecasts"
+    ],
+    "trigger": {
+      "minimumPointGain": 5
+    },
+    "banterAngles": [
+      "point_explosion",
+      "momentum"
+    ],
+    "relatedOpportunities": [
+      "BiggestWinner"
+    ],
+    "tags": [
+      "predictions",
+      "points"
+    ]
+  },
+  {
+    "id": "90thMinuteHeartbreak",
+    "name": "90th Minute Heartbreak",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "A goal from the 90th minute onward destroys an exact prediction.",
+    "requiredData": [
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "minimumMinute": 90,
+      "exactPredictionLost": true
+    },
+    "banterAngles": [
+      "heartbreak",
+      "late_drama"
+    ],
+    "relatedOpportunities": [
+      "AddedTimeDisaster",
+      "LastMinuteHero"
+    ],
+    "tags": [
+      "match",
+      "heartbreak"
+    ]
+  },
+  {
+    "id": "LastMinuteHero",
+    "name": "Last Minute Hero",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "A late match event earns points for a player.",
+    "requiredData": [
+      "matchEvents",
+      "forecasts",
+      "previousForecasts"
+    ],
+    "trigger": {
+      "minimumMinute": 90,
+      "pointGain": true
+    },
+    "banterAngles": [
+      "late_hero",
+      "relief"
+    ],
+    "relatedOpportunities": [
+      "AddedTimeHero",
+      "90thMinuteHeartbreak"
+    ],
+    "tags": [
+      "match",
+      "hero"
+    ]
   }
 ]

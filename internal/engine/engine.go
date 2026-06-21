@@ -10,7 +10,6 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/banter"
 	"github.com/DSanoussy/banter-engine/internal/catalog"
 	"github.com/DSanoussy/banter-engine/internal/config"
-	"github.com/DSanoussy/banter-engine/internal/contextbuilder"
 	"github.com/DSanoussy/banter-engine/internal/discord"
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/logging"
@@ -36,6 +35,11 @@ func New(cfg config.Config, output io.Writer) (*Engine, error) {
 	opportunityCatalog, err := catalog.LoadCatalog(opportunityCatalogPath)
 	if err != nil {
 		return nil, err
+	}
+	for _, opportunityType := range opportunities.RegisteredTypes() {
+		if _, found := opportunityCatalog.FindByID(opportunityType); !found {
+			return nil, fmt.Errorf("registered opportunity %q is missing from catalog", opportunityType)
+		}
 	}
 
 	var discordClient *discord.Client
@@ -66,7 +70,7 @@ func (e *Engine) Run(ctx context.Context) error {
 		default:
 		}
 
-		if err := e.runOnce(ctx); err != nil {
+		if err := e.runOnce(); err != nil {
 			if ctx.Err() != nil {
 				return nil
 			}
@@ -81,7 +85,7 @@ func (e *Engine) Run(ctx context.Context) error {
 	}
 }
 
-func (e *Engine) runOnce(ctx context.Context) error {
+func (e *Engine) runOnce() error {
 	previousStandings, err := snapshot.LoadStandings(e.snapshotPath("standings.json"))
 	if err != nil {
 		return err
@@ -151,14 +155,12 @@ func (e *Engine) runOnce(ctx context.Context) error {
 	detected = append(detected, opportunities.DetectStreaks(forecastHistory)...)
 	detected = append(detected, opportunities.Detect(previousStandings, standings)...)
 
-	banterContext := contextbuilder.Build(standings, allForecasts, matches, detected)
-	generator := banter.NewGenerator(nil)
 	for _, opportunity := range detected {
 		definition, found := e.catalog.FindByID(opportunity.Type)
 		if !found {
 			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
 		}
-		message := generator.GenerateWithDefinition(ctx, opportunity, definition, banterContext)
+		message := banter.GenerateWithDefinition(opportunity, definition)
 		if err := e.publish(message); err != nil {
 			return err
 		}

@@ -112,6 +112,13 @@ func validateDefinitions(definitions []OpportunityDefinition) error {
 		}
 		seen[definition.ID] = struct{}{}
 	}
+	for _, definition := range definitions {
+		for _, relatedID := range definition.RelatedOpportunities {
+			if _, found := seen[relatedID]; !found {
+				return fmt.Errorf("opportunity %q references unknown opportunity %q", definition.ID, relatedID)
+			}
+		}
+	}
 	return nil
 }
 

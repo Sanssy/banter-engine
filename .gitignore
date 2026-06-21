@@ -1,0 +1,8 @@
+.DS_Store
+__MACOSX/
+
+# Local runtime state and binaries
+/data/
+/banter-engine
+*.test
+*.out

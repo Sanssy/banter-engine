@@ -24,8 +24,8 @@ func TestDetectCrowdIntelligenceDetectsPopularMistake(t *testing.T) {
 		{Type: PopularMistake, Actor: "France", Target: "France - Espagne"},
 	}
 
-	if got := DetectCrowdIntelligence(match); !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectCrowdIntelligence() = %#v, want %#v", got, want)
+	if got := detectCrowdIntelligence(match); !reflect.DeepEqual(got, want) {
+		t.Fatalf("detectCrowdIntelligence() = %#v, want %#v", got, want)
 	}
 }
 
@@ -44,14 +44,14 @@ func TestDetectCrowdIntelligenceDetectsCrowdTrap(t *testing.T) {
 		{Type: CrowdTrap, Actor: "Espagne", Target: "France"},
 	}
 
-	if got := DetectCrowdIntelligence(match); !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectCrowdIntelligence() = %#v, want %#v", got, want)
+	if got := detectCrowdIntelligence(match); !reflect.DeepEqual(got, want) {
+		t.Fatalf("detectCrowdIntelligence() = %#v, want %#v", got, want)
 	}
 }
 
 func TestDetectCrowdIntelligenceRequiresSixtyPercent(t *testing.T) {
 	match := matches.Match{PredictionStats: matches.PredictionStats{Home: 0.59, Draw: 0.21, Away: 0.20}}
-	if got := DetectCrowdIntelligence(match); len(got) != 0 {
-		t.Fatalf("DetectCrowdIntelligence() returned %d opportunities, want 0", len(got))
+	if got := detectCrowdIntelligence(match); len(got) != 0 {
+		t.Fatalf("detectCrowdIntelligence() returned %d opportunities, want 0", len(got))
 	}
 }

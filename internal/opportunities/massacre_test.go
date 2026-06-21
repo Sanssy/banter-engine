@@ -24,8 +24,8 @@ func TestDetectMassFailures(t *testing.T) {
 		{Type: PredictionMassacre, Actor: "France - Espagne"},
 	}
 
-	if got := DetectMassFailures(match); !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectMassFailures() = %#v, want %#v", got, want)
+	if got := detectMassFailures(match); !reflect.DeepEqual(got, want) {
+		t.Fatalf("detectMassFailures() = %#v, want %#v", got, want)
 	}
 }
 
@@ -40,15 +40,15 @@ func TestDetectMassFailuresUsesStrictThresholds(t *testing.T) {
 		},
 	}
 
-	if got := DetectMassFailures(match); len(got) != 0 {
-		t.Fatalf("DetectMassFailures() returned %d opportunities at the boundary, want 0", len(got))
+	if got := detectMassFailures(match); len(got) != 0 {
+		t.Fatalf("detectMassFailures() returned %d opportunities at the boundary, want 0", len(got))
 	}
 
 	match.Score = matches.Score{Away: 1}
 	match.PredictionStats = matches.PredictionStats{Home: 0.80, Away: 0.20}
-	got := DetectMassFailures(match)
+	got := detectMassFailures(match)
 	want := []Opportunity{{Type: PredictionMassacre, Actor: " - "}}
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectMassFailures() = %#v, want %#v", got, want)
+		t.Fatalf("detectMassFailures() = %#v, want %#v", got, want)
 	}
 }

@@ -30,8 +30,8 @@ func TestDetectRankingTrends(t *testing.T) {
 		{Type: RunawayLeader, Actor: "Amine", Target: "Sanssy"},
 	}
 
-	if got := DetectRankingTrends(previous, current); !reflect.DeepEqual(got, want) {
-		t.Fatalf("DetectRankingTrends() = %#v, want %#v", got, want)
+	if got := detectRankingTrends(previous, current); !reflect.DeepEqual(got, want) {
+		t.Fatalf("detectRankingTrends() = %#v, want %#v", got, want)
 	}
 }
 
@@ -45,7 +45,7 @@ func TestDetectRankingTrendsIgnoresSmallChanges(t *testing.T) {
 		{UserID: "b", Name: "Benoit", Rank: 2, Points: 95},
 	}
 
-	if got := DetectRankingTrends(previous, current); len(got) != 0 {
-		t.Fatalf("DetectRankingTrends() returned %d opportunities, want 0", len(got))
+	if got := detectRankingTrends(previous, current); len(got) != 0 {
+		t.Fatalf("detectRankingTrends() returned %d opportunities, want 0", len(got))
 	}
 }

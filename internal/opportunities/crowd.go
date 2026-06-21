@@ -9,7 +9,7 @@ import (
 
 const crowdFavoriteThreshold = 0.60
 
-func DetectCrowdIntelligence(match matches.Match) []Opportunity {
+func detectCrowdIntelligence(match matches.Match) []Opportunity {
 	if !hasPredictionStats(match.PredictionStats) {
 		return nil
 	}

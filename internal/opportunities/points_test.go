@@ -18,13 +18,13 @@ func TestCalculateAndDetectPointImpacts(t *testing.T) {
 		{UserID: "user-2", MatchID: "match-1", Points: 0},
 		{UserID: "user-3", MatchID: "match-1", Points: 3},
 	}
-	wantImpacts := []PointImpact{
+	wantImpacts := []pointImpact{
 		{UserID: "user-1", MatchID: "match-1", PreviousPoints: 0, CurrentPoints: 7, Delta: 7},
 		{UserID: "user-2", MatchID: "match-1", PreviousPoints: 5, CurrentPoints: 0, Delta: -5},
 		{UserID: "user-3", MatchID: "match-1", PreviousPoints: 1, CurrentPoints: 3, Delta: 2},
 	}
-	if got := CalculatePointImpacts(previous, current); !reflect.DeepEqual(got, wantImpacts) {
-		t.Fatalf("CalculatePointImpacts() = %#v, want %#v", got, wantImpacts)
+	if got := calculatePointImpacts(previous, current); !reflect.DeepEqual(got, wantImpacts) {
+		t.Fatalf("calculatePointImpacts() = %#v, want %#v", got, wantImpacts)
 	}
 
 	wantOpportunities := []Opportunity{

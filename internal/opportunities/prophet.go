@@ -7,7 +7,7 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
 
-func DetectProphets(match matches.Match, matchForecasts []forecasts.Forecast) []Opportunity {
+func detectProphets(match matches.Match, matchForecasts []forecasts.Forecast) []Opportunity {
 	if match.Status != "fullTime" || !hasPredictionStats(match.PredictionStats) {
 		return nil
 	}

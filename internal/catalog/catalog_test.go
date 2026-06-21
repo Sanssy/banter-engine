@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/DSanoussy/banter-engine/internal/opportunities"
 )
 
 func TestLoadCatalogLoadsDefinitiveCatalog(t *testing.T) {
@@ -12,12 +14,31 @@ func TestLoadCatalogLoadsDefinitiveCatalog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadCatalog() error = %v", err)
 	}
-	if opportunityCatalog.Len() != 100 {
-		t.Fatalf("catalog contains %d definitions, want 100", opportunityCatalog.Len())
+	if opportunityCatalog.Len() != 113 {
+		t.Fatalf("catalog contains %d definitions, want 113", opportunityCatalog.Len())
 	}
-	for _, category := range []string{"Ranking", "Predictions", "Crowd", "MatchEvents", "Narratives"} {
-		if definitions := opportunityCatalog.FindByCategory(category); len(definitions) != 20 {
-			t.Fatalf("FindByCategory(%q) returned %d definitions, want 20", category, len(definitions))
+	expectedByCategory := map[string]int{
+		"Ranking":     21,
+		"Predictions": 26,
+		"Crowd":       20,
+		"MatchEvents": 26,
+		"Narratives":  20,
+	}
+	for category, expected := range expectedByCategory {
+		if definitions := opportunityCatalog.FindByCategory(category); len(definitions) != expected {
+			t.Fatalf("FindByCategory(%q) returned %d definitions, want %d", category, len(definitions), expected)
+		}
+	}
+}
+
+func TestCatalogContainsEveryRegisteredOpportunity(t *testing.T) {
+	opportunityCatalog, err := LoadCatalog(filepath.Join("..", "..", "resources", "opportunities.json"))
+	if err != nil {
+		t.Fatalf("LoadCatalog() error = %v", err)
+	}
+	for _, opportunityType := range opportunities.RegisteredTypes() {
+		if _, found := opportunityCatalog.FindByID(opportunityType); !found {
+			t.Errorf("registered opportunity %q is missing from catalog", opportunityType)
 		}
 	}
 }
@@ -59,6 +80,14 @@ func TestLoadCatalogRejectsMissingFields(t *testing.T) {
 	path := writeCatalog(t, missing)
 	if _, err := LoadCatalog(path); err == nil || !strings.Contains(err.Error(), "tags") {
 		t.Fatalf("LoadCatalog() error = %v, want missing tags error", err)
+	}
+}
+
+func TestLoadCatalogRejectsUnknownRelatedOpportunity(t *testing.T) {
+	unknown := strings.Replace(validCatalog, `"DoubleOvertake"]`, `"Unknown"]`, 1)
+	path := writeCatalog(t, unknown)
+	if _, err := LoadCatalog(path); err == nil || !strings.Contains(err.Error(), "references unknown") {
+		t.Fatalf("LoadCatalog() error = %v, want unknown related opportunity error", err)
 	}
 }
 

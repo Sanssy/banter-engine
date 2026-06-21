@@ -1,5 +1,11 @@
 package opportunities
 
+type Opportunity struct {
+	Type   string
+	Actor  string
+	Target string
+}
+
 const (
 	RankingOvertake           = "RankingOvertake"
 	EnteredTop3               = "EnteredTop3"
@@ -39,3 +45,47 @@ const (
 	Revenge                   = "Revenge"
 	Dominance                 = "Dominance"
 )
+
+var registeredTypes = []string{
+	RankingOvertake,
+	EnteredTop3,
+	ExitedTop3,
+	LeaderUnderPressure,
+	LastPlaceLocked,
+	ComebackSeason,
+	FreeFall,
+	RunawayLeader,
+	PodiumFight,
+	HugeUpset,
+	EveryoneWasWrong,
+	TheChosenOne,
+	AgainstTheCrowd,
+	CrowdFavorite,
+	CrowdTrap,
+	PopularMistake,
+	PredictionMassacre,
+	HotStreak,
+	ColdStreak,
+	MatchStarted,
+	MatchEnded,
+	ScoreChanged,
+	ImportantMatchEvent,
+	GoalSwing,
+	MatchTurnaround,
+	EqualizerChaos,
+	BiggestWinner,
+	BiggestLoser,
+	PointExplosion,
+	NinetiethMinuteHeartbreak,
+	AddedTimeDisaster,
+	LastMinuteHero,
+	VARVictim,
+	RedCardDisaster,
+	Nemesis,
+	Revenge,
+	Dominance,
+}
+
+func RegisteredTypes() []string {
+	return append([]string(nil), registeredTypes...)
+}

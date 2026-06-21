@@ -6,7 +6,7 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
 
-func DetectMassFailures(match matches.Match) []Opportunity {
+func detectMassFailures(match matches.Match) []Opportunity {
 	if match.Status != "fullTime" || !hasPredictionStats(match.PredictionStats) {
 		return nil
 	}

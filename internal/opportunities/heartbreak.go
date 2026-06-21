@@ -59,7 +59,7 @@ func DetectLatePointImpacts(
 
 	matchLabel := fmt.Sprintf("%s - %s", currentMatch.HomeTeam, currentMatch.AwayTeam)
 	var detected []Opportunity
-	for _, impact := range CalculatePointImpacts(previousForecasts, currentForecasts) {
+	for _, impact := range calculatePointImpacts(previousForecasts, currentForecasts) {
 		if impact.MatchID != currentMatch.MatchID {
 			continue
 		}
