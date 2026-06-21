@@ -8,6 +8,9 @@ const (
 	ExitedTop3          = "ExitedTop3"
 	LeaderUnderPressure = "LeaderUnderPressure"
 	LastPlaceLocked     = "LastPlaceLocked"
+	Nemesis             = "Nemesis"
+	Revenge             = "Revenge"
+	Dominance           = "Dominance"
 )
 
 type Opportunity struct {

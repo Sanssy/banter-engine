@@ -12,12 +12,14 @@ import (
 	matchmodel "github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/mpp"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
+	"github.com/DSanoussy/banter-engine/internal/rivalries"
 	"github.com/DSanoussy/banter-engine/internal/snapshot"
 )
 
 const challengeID = "mpp_challenge_UDKDDH27"
 const snapshotPath = "data/standings.json"
 const matchesSnapshotPath = "data/matches.json"
+const rivalriesSnapshotPath = "data/rivalries.json"
 const runInterval = 5 * time.Minute
 
 func main() {
@@ -49,6 +51,10 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 		return err
 	}
 	previousMatches, err := snapshot.LoadMatches(matchesSnapshotPath)
+	if err != nil {
+		return err
+	}
+	rivalryState, err := snapshot.LoadRivalries(rivalriesSnapshotPath)
 	if err != nil {
 		return err
 	}
@@ -85,6 +91,12 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	}
 	var forecastHistory []forecasts.Forecast
 	var messages []string
+	updatedRivalries, rivalryOpportunities := rivalries.Update(standings, rivalryState)
+	for _, opportunity := range rivalryOpportunities {
+		message := banter.Generate(opportunity)
+		fmt.Println(message)
+		messages = append(messages, message)
+	}
 	for _, opportunity := range opportunities.DetectLiveUpdates(previousMatches, matches) {
 		message := banter.Generate(opportunity)
 		fmt.Println(message)
@@ -138,6 +150,9 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 		return err
 	}
 	if err := snapshot.SaveMatches(matchesSnapshotPath, matches); err != nil {
+		return err
+	}
+	if err := snapshot.SaveRivalries(rivalriesSnapshotPath, updatedRivalries); err != nil {
 		return err
 	}
 	return nil

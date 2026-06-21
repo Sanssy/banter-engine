@@ -163,6 +163,33 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "🟥 Le rouge met le pronostic de Julien en danger sur France - Espagne.",
 		},
+		{
+			name: "nemesis",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.Nemesis,
+				Actor:  "Sanssy",
+				Target: "William",
+			},
+			want: "👹 Sanssy devient la Némésis officielle de William.",
+		},
+		{
+			name: "revenge",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.Revenge,
+				Actor:  "Sanssy",
+				Target: "William",
+			},
+			want: "🗡️ Sanssy prend sa revanche sur William.",
+		},
+		{
+			name: "dominance",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.Dominance,
+				Actor:  "Sanssy",
+				Target: "William",
+			},
+			want: "👑 Sanssy domine désormais sa rivalité avec William.",
+		},
 	}
 
 	for _, tt := range tests {
