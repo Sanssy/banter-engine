@@ -35,7 +35,7 @@ func main() {
 		fmt.Printf("%d. %-12s %d\n", standing.Rank, standing.Name, standing.Points)
 	}
 
-	for _, opportunity := range opportunities.DetectRankingOvertakes(previousStandings, standings) {
+	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
 		fmt.Println(banter.Generate(opportunity))
 	}
 
