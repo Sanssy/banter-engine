@@ -155,6 +155,24 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			want: "💔 Julien perd son prono parfait dans les derniers instants de France - Espagne.",
 		},
 		{
+			name: "added time disaster",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.AddedTimeDisaster,
+				Actor:  "Julien",
+				Target: "France - Espagne",
+			},
+			want: "⏱️ Le temps additionnel coûte cher à Julien sur France - Espagne.",
+		},
+		{
+			name: "last minute hero",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.LastMinuteHero,
+				Actor:  "Sanssy",
+				Target: "France - Espagne",
+			},
+			want: "🦸 Sanssy devient le héros de la dernière minute sur France - Espagne.",
+		},
+		{
 			name: "var victim",
 			opportunity: opportunities.Opportunity{
 				Type:   opportunities.VARVictim,

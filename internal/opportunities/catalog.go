@@ -28,6 +28,8 @@ const (
 	BiggestLoser              = "BiggestLoser"
 	PointExplosion            = "PointExplosion"
 	NinetiethMinuteHeartbreak = "90thMinuteHeartbreak"
+	AddedTimeDisaster         = "AddedTimeDisaster"
+	LastMinuteHero            = "LastMinuteHero"
 	VARVictim                 = "VARVictim"
 	RedCardDisaster           = "RedCardDisaster"
 	Nemesis                   = "Nemesis"
@@ -88,6 +90,8 @@ var catalog = []Definition{
 	{BiggestLoser, CategoryPrediction, "A user records the largest point loss.", forecastHistory()},
 	{PointExplosion, CategoryPrediction, "A user gains at least five points at once.", forecastHistory()},
 	{NinetiethMinuteHeartbreak, CategoryLive, "A late goal destroys an exact forecast.", liveDetection(true)},
+	{AddedTimeDisaster, CategoryLive, "An added-time event costs a user points.", liveDetection(true)},
+	{LastMinuteHero, CategoryLive, "A late event earns a user points.", liveDetection(true)},
 	{VARVictim, CategoryLive, "A VAR decision destroys a forecast.", liveDetection(true)},
 	{RedCardDisaster, CategoryLive, "A red card threatens a forecast.", liveDetection(true)},
 	{Nemesis, CategoryRivalry, "A player records a third head-to-head win.", standingsHistory()},

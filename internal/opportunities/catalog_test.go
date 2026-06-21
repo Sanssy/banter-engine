@@ -31,6 +31,8 @@ func TestCatalogRegistersEveryOpportunityOnce(t *testing.T) {
 		BiggestLoser,
 		PointExplosion,
 		NinetiethMinuteHeartbreak,
+		AddedTimeDisaster,
+		LastMinuteHero,
 		VARVictim,
 		RedCardDisaster,
 		Nemesis,

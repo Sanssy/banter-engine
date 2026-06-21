@@ -133,6 +133,11 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 				fmt.Println(message)
 				messages = append(messages, message)
 			}
+			for _, opportunity := range opportunities.DetectLatePointImpacts(previousMatch, match, previousForecasts, forecasts) {
+				message := banter.Generate(opportunity)
+				fmt.Println(message)
+				messages = append(messages, message)
+			}
 		}
 	}
 	for _, opportunity := range opportunities.DetectPointImpacts(previousForecasts, allForecasts) {
