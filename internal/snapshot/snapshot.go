@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/Sanssy/banter-engine/internal/forecasts"
 	"github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/opportunities"
 	"github.com/Sanssy/banter-engine/internal/rivalries"
 )
 
@@ -136,4 +139,58 @@ func LoadForecasts(path string) ([]forecasts.Forecast, error) {
 		return nil, fmt.Errorf("decode forecasts snapshot: %w", err)
 	}
 	return forecastData, nil
+}
+
+func SaveNightBuffer(path string, ops []opportunities.Opportunity) error {
+	data, err := json.MarshalIndent(ops, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode night buffer: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create snapshot directory: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		return fmt.Errorf("write night buffer: %w", err)
+	}
+	return nil
+}
+
+func LoadNightBuffer(path string) ([]opportunities.Opportunity, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read night buffer: %w", err)
+	}
+	var ops []opportunities.Opportunity
+	if err := json.Unmarshal(data, &ops); err != nil {
+		return nil, fmt.Errorf("decode night buffer: %w", err)
+	}
+	return ops, nil
+}
+
+func LoadNightSummaryDate(path string) (time.Time, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return time.Time{}, nil
+	}
+	if err != nil {
+		return time.Time{}, fmt.Errorf("read night summary date: %w", err)
+	}
+	t, err := time.Parse(time.DateOnly, strings.TrimSpace(string(data)))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parse night summary date: %w", err)
+	}
+	return t, nil
+}
+
+func SaveNightSummaryDate(path string, t time.Time) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create snapshot directory: %w", err)
+	}
+	if err := os.WriteFile(path, []byte(t.Format(time.DateOnly)), 0o644); err != nil {
+		return fmt.Errorf("write night summary date: %w", err)
+	}
+	return nil
 }

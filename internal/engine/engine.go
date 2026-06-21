@@ -15,6 +15,7 @@ import (
 	"github.com/Sanssy/banter-engine/internal/logging"
 	matchmodel "github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/mpp"
+	"github.com/Sanssy/banter-engine/internal/notify"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
 	"github.com/Sanssy/banter-engine/internal/references"
 	"github.com/Sanssy/banter-engine/internal/rivalries"
@@ -90,6 +91,8 @@ func (e *Engine) Run(ctx context.Context) error {
 }
 
 func (e *Engine) runOnce() error {
+	now := time.Now()
+
 	previousStandings, err := snapshot.LoadStandings(e.snapshotPath("standings.json"))
 	if err != nil {
 		return err
@@ -103,6 +106,14 @@ func (e *Engine) runOnce() error {
 		return err
 	}
 	previousForecasts, err := snapshot.LoadForecasts(e.snapshotPath("forecasts.json"))
+	if err != nil {
+		return err
+	}
+	nightBuffer, err := snapshot.LoadNightBuffer(e.snapshotPath("night_buffer.json"))
+	if err != nil {
+		return err
+	}
+	nightSummaryDate, err := snapshot.LoadNightSummaryDate(e.snapshotPath("night_summary_date.txt"))
 	if err != nil {
 		return err
 	}
@@ -165,19 +176,45 @@ func (e *Engine) runOnce() error {
 	detected = append(detected, opportunities.DetectStreaks(forecastHistory)...)
 	detected = append(detected, opportunities.Detect(previousStandings, standings)...)
 
-	for _, opportunity := range detected {
-		opportunity.Actor = e.resolver.Resolve(opportunity.Actor)
-		opportunity.Target = e.resolver.Resolve(opportunity.Target)
-		definition, found := e.catalog.FindByID(opportunity.Type)
-		if !found {
-			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
+	// Resolve actor and target names for all detected opportunities.
+	for i := range detected {
+		detected[i].Actor = e.resolver.Resolve(detected[i].Actor)
+		detected[i].Target = e.resolver.Resolve(detected[i].Target)
+	}
+
+	e.logger.Info("run completed with %d opportunities", len(detected))
+
+	if notify.IsQuietHour(now) {
+		// Accumulate opportunities overnight — no notifications sent.
+		nightBuffer = append(nightBuffer, detected...)
+		e.logger.Info("quiet hour: buffering %d opportunities (total=%d)", len(detected), len(nightBuffer))
+	} else if notify.IsNightSummaryHour(now) && !sameDay(nightSummaryDate, now) {
+		// Morning digest: send summary of overnight events, then dispatch live events normally.
+		if len(nightBuffer) > 0 {
+			summary := notify.NightSummary(nightBuffer, e.catalog)
+			if summary != "" {
+				if err := e.publish(summary); err != nil {
+					return err
+				}
+			}
+			nightBuffer = nil
+			if err := snapshot.SaveNightSummaryDate(e.snapshotPath("night_summary_date.txt"), now); err != nil {
+				return err
+			}
 		}
-		message := banter.GenerateWithDefinition(opportunity, definition)
-		if err := e.publish(message); err != nil {
+		if err := e.publishLiveDigest(detected); err != nil {
+			return err
+		}
+	} else {
+		// Normal daytime dispatch.
+		if err := e.publishLiveDigest(detected); err != nil {
 			return err
 		}
 	}
 
+	if err := snapshot.SaveNightBuffer(e.snapshotPath("night_buffer.json"), nightBuffer); err != nil {
+		return err
+	}
 	if err := snapshot.SaveStandings(e.snapshotPath("standings.json"), standings); err != nil {
 		return err
 	}
@@ -196,7 +233,22 @@ func (e *Engine) runOnce() error {
 	if err := snapshot.SaveForecasts(e.snapshotPath("forecasts.json"), allForecasts); err != nil {
 		return err
 	}
-	e.logger.Info("run completed with %d opportunities", len(detected))
+	return nil
+}
+
+// publishLiveDigest selects the top opportunities and publishes each as a banter message.
+func (e *Engine) publishLiveDigest(detected []opportunities.Opportunity) error {
+	selected := notify.SelectTop(detected, e.catalog, notify.MaxNotificationsPerRun)
+	for _, opportunity := range selected {
+		definition, found := e.catalog.FindByID(opportunity.Type)
+		if !found {
+			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
+		}
+		message := banter.GenerateWithDefinition(opportunity, definition)
+		if err := e.publish(message); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -217,4 +269,10 @@ func firstMatchID(matches []matchmodel.Match) string {
 		return ""
 	}
 	return matches[0].MatchID
+}
+
+func sameDay(a, b time.Time) bool {
+	ay, am, ad := a.Date()
+	by, bm, bd := b.Date()
+	return ay == by && am == bm && ad == bd
 }
