@@ -15,7 +15,19 @@ type scoredOpportunity struct {
 	score int
 }
 
-// SelectTop returns at most n opportunities, deduplicated by type, ordered by catalog severity descending.
+// dedupKey builds a composite key that keeps distinct actors/targets apart for the same type.
+// (Type, Actor) when Actor is set, (Type, Target) when only Target is set, Type alone otherwise.
+func dedupKey(op opportunities.Opportunity) string {
+	if op.Actor != "" {
+		return op.Type + "\x00" + op.Actor
+	}
+	if op.Target != "" {
+		return op.Type + "\x00" + op.Target
+	}
+	return op.Type
+}
+
+// SelectTop returns at most n opportunities, deduplicated by (Type, Actor/Target), ordered by catalog severity descending.
 func SelectTop(ops []opportunities.Opportunity, cat *catalog.Catalog, n int) []opportunities.Opportunity {
 	scored := make([]scoredOpportunity, 0, len(ops))
 	for _, op := range ops {
@@ -33,10 +45,11 @@ func SelectTop(ops []opportunities.Opportunity, cat *catalog.Catalog, n int) []o
 	seen := make(map[string]bool, n)
 	result := make([]opportunities.Opportunity, 0, n)
 	for _, s := range scored {
-		if seen[s.op.Type] {
+		key := dedupKey(s.op)
+		if seen[key] {
 			continue
 		}
-		seen[s.op.Type] = true
+		seen[key] = true
 		result = append(result, s.op)
 		if len(result) >= n {
 			break
