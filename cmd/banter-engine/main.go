@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/DSanoussy/banter-engine/internal/banter"
 	"github.com/DSanoussy/banter-engine/internal/mpp"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 	"github.com/DSanoussy/banter-engine/internal/snapshot"
@@ -35,7 +36,7 @@ func main() {
 	}
 
 	for _, opportunity := range opportunities.DetectRankingOvertakes(previousStandings, standings) {
-		fmt.Printf("%s: %s overtook %s\n", opportunity.Type, opportunity.Actor, opportunity.Target)
+		fmt.Println(banter.Generate(opportunity))
 	}
 
 	if err := snapshot.SaveStandings(snapshotPath, standings); err != nil {
