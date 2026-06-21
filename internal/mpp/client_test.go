@@ -1,42 +1,80 @@
 package mpp
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Sanssy/banter-engine/internal/forecasts"
 	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
-func TestGetMatches(t *testing.T) {
+func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 	client := NewClient("test-token")
+	var requestedPaths []string
 	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		requestedPaths = append(requestedPaths, req.URL.Path)
 		if got := req.Header.Get("Authorization"); got != "Bearer test-token" {
 			t.Fatalf("Authorization header = %q, want %q", got, "Bearer test-token")
 		}
 
 		var body string
 		switch req.URL.Path {
-		case "/championships-current-matches":
+		case "/challenge/challenge-1":
+			body = `{"gameSettings":{"championshipId":8}}`
+		case "/championship-calendar/8/nearest-game-weeks":
 			body = `{
-				"match-1": {
-					"matchId": "match-1",
+				"nearestGameWeeks": {
+					"previousGameWeek": {"gameWeekNumber":1,"matchesIds":["club-match"]},
+					"currentGameWeek": {
+						"gameWeekNumber":2,
+						"matchesIds":["world-cup-match"],
+						"startDate":"2026-06-18T16:00:00Z",
+						"endDate":"2026-06-24T02:00:00Z"
+					},
+					"nextGameWeek": {"gameWeekNumber":3,"matchesIds":["future-match"]}
+				}
+			}`
+		case "/championship-match/summaries":
+			if req.Method != http.MethodPost {
+				t.Fatalf("request method = %q, want POST", req.Method)
+			}
+			var request matchSummariesRequest
+			if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
+				t.Fatalf("decode summaries request: %v", err)
+			}
+			if !reflect.DeepEqual(request.MatchIDs, []string{"world-cup-match"}) {
+				t.Fatalf("matchesIds = %#v, want current game week IDs", request.MatchIDs)
+			}
+			body = `{
+				"world-cup-match": {
+					"matchId": "world-cup-match",
+					"championshipId": 8,
+					"gameWeekNumber": 2,
+					"date": "2026-06-21T16:00:00Z",
 					"period": "preMatch",
-					"home": {"clubId": "club-1", "score": 0},
-					"away": {"clubId": "club-2", "score": 0},
+					"home": {"clubId": "canada", "score": 0},
+					"away": {"clubId": "qatar", "score": 0},
 					"quotations": {"home": 125, "draw": 310, "away": 240},
 					"stats": {"bets": {"home": 0.5, "draw": 0.2, "away": 0.3}}
 				},
-				"match-without-data": null
+				"club-match": {
+					"matchId": "club-match",
+					"home": {"clubId": "saint-etienne"},
+					"away": {"clubId": "guingamp"}
+				}
 			}`
 		case "/championship-clubs":
 			body = `{
 				"championshipClubs": {
-					"club-1": {"name": {"fr-FR": "France"}},
-					"club-2": {"shortName": "Espagne"}
+					"canada": {"name": {"fr-FR": "Canada"}},
+					"qatar": {"shortName": "Qatar"},
+					"saint-etienne": {"shortName": "AS Saint-Étienne"},
+					"guingamp": {"shortName": "Guingamp"}
 				}
 			}`
 		default:
@@ -53,9 +91,10 @@ func TestGetMatches(t *testing.T) {
 
 	want := []matches.Match{
 		{
-			MatchID:  "match-1",
-			HomeTeam: "France",
-			AwayTeam: "Espagne",
+			MatchID:  "world-cup-match",
+			Date:     time.Date(2026, 6, 21, 16, 0, 0, 0, time.UTC),
+			HomeTeam: "Canada",
+			AwayTeam: "Qatar",
 			Score:    matches.Score{},
 			Status:   "preMatch",
 			Quotations: matches.Quotations{
@@ -71,12 +110,31 @@ func TestGetMatches(t *testing.T) {
 		},
 	}
 
-	got, err := client.GetMatches()
+	got, err := client.GetMatches("challenge-1")
 	if err != nil {
 		t.Fatalf("GetMatches() error = %v", err)
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("GetMatches() = %#v, want %#v", got, want)
+	}
+	if len(requestedPaths) != 4 {
+		t.Fatalf("requested paths = %#v, want challenge-scoped retrieval only", requestedPaths)
+	}
+}
+
+func TestSelectCurrentGameWeekUsesDateWhenCurrentIsOmitted(t *testing.T) {
+	now := time.Date(2026, 6, 21, 12, 0, 0, 0, time.UTC)
+	previous := &gameWeekDTO{
+		Number:   2,
+		MatchIDs: []string{"world-cup-match"},
+		Start:    now.Add(-24 * time.Hour),
+		End:      now.Add(24 * time.Hour),
+	}
+	next := &gameWeekDTO{Number: 3, MatchIDs: []string{"future-match"}, Start: now.Add(48 * time.Hour), End: now.Add(72 * time.Hour)}
+
+	got, found := selectCurrentGameWeek(nearestGameWeeksDTO{PreviousGameWeek: previous, NextGameWeek: next}, now)
+	if !found || got.Number != 2 {
+		t.Fatalf("selectCurrentGameWeek() = %+v, %v, want in-progress game week", got, found)
 	}
 }
 

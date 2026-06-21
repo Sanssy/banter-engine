@@ -1,6 +1,7 @@
 package mpp
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -51,10 +52,34 @@ func (c *Client) GetStandings(challengeID string) ([]model.Standing, error) {
 	return standings, nil
 }
 
-func (c *Client) GetMatches() ([]matches.Match, error) {
+func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
+	var challenge challengeDTO
+	challengePath := "/challenge/" + url.PathEscape(challengeID)
+	if err := c.get(challengePath, nil, &challenge); err != nil {
+		return nil, fmt.Errorf("fetch challenge: %w", err)
+	}
+	championshipID := challenge.GameSettings.ChampionshipID
+	if championshipID <= 0 {
+		return nil, fmt.Errorf("challenge %q has no championship", challengeID)
+	}
+
+	calendarPath := fmt.Sprintf("/championship-calendar/%d/nearest-game-weeks", championshipID)
+	var calendar nearestGameWeeksResponse
+	if err := c.get(calendarPath, nil, &calendar); err != nil {
+		return nil, fmt.Errorf("fetch nearest game weeks: %w", err)
+	}
+	gameWeek, found := selectCurrentGameWeek(calendar.NearestGameWeeks, time.Now())
+	if !found {
+		return nil, fmt.Errorf("championship %d has no current game week", championshipID)
+	}
+	if len(gameWeek.MatchIDs) == 0 {
+		return []matches.Match{}, nil
+	}
+
 	var apiMatches map[string]*matchDTO
-	if err := c.get("/championships-current-matches", nil, &apiMatches); err != nil {
-		return nil, fmt.Errorf("fetch matches: %w", err)
+	body := matchSummariesRequest{MatchIDs: gameWeek.MatchIDs}
+	if err := c.post("/championship-match/summaries", body, &apiMatches); err != nil {
+		return nil, fmt.Errorf("fetch match summaries: %w", err)
 	}
 
 	var apiClubs clubsResponse
@@ -62,8 +87,9 @@ func (c *Client) GetMatches() ([]matches.Match, error) {
 		return nil, fmt.Errorf("fetch clubs: %w", err)
 	}
 
-	result := make([]matches.Match, 0, len(apiMatches))
-	for id, match := range apiMatches {
+	result := make([]matches.Match, 0, len(gameWeek.MatchIDs))
+	for _, id := range gameWeek.MatchIDs {
+		match := apiMatches[id]
 		if match == nil {
 			continue
 		}
@@ -171,6 +197,23 @@ func (c *Client) get(path string, query url.Values, target any) error {
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}
+	return c.do(req, target)
+}
+
+func (c *Client) post(path string, body, target any) error {
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("encode request: %w", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, baseURL+path, bytes.NewReader(data))
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return c.do(req, target)
+}
+
+func (c *Client) do(req *http.Request, target any) error {
 	req.Header.Set("Authorization", "Bearer "+c.token)
 
 	resp, err := c.httpClient.Do(req)
@@ -187,6 +230,52 @@ func (c *Client) get(path string, query url.Values, target any) error {
 		return fmt.Errorf("decode response: %w", err)
 	}
 	return nil
+}
+
+type challengeDTO struct {
+	GameSettings struct {
+		ChampionshipID int `json:"championshipId"`
+	} `json:"gameSettings"`
+}
+
+type nearestGameWeeksResponse struct {
+	NearestGameWeeks nearestGameWeeksDTO `json:"nearestGameWeeks"`
+}
+
+type nearestGameWeeksDTO struct {
+	PreviousGameWeek *gameWeekDTO `json:"previousGameWeek"`
+	CurrentGameWeek  *gameWeekDTO `json:"currentGameWeek"`
+	NextGameWeek     *gameWeekDTO `json:"nextGameWeek"`
+}
+
+type gameWeekDTO struct {
+	Number   int       `json:"gameWeekNumber"`
+	MatchIDs []string  `json:"matchesIds"`
+	Start    time.Time `json:"startDate"`
+	End      time.Time `json:"endDate"`
+}
+
+type matchSummariesRequest struct {
+	MatchIDs []string `json:"matchesIds"`
+}
+
+func selectCurrentGameWeek(nearest nearestGameWeeksDTO, now time.Time) (gameWeekDTO, bool) {
+	if nearest.CurrentGameWeek != nil {
+		return *nearest.CurrentGameWeek, true
+	}
+	for _, gameWeek := range []*gameWeekDTO{nearest.PreviousGameWeek, nearest.NextGameWeek} {
+		if gameWeek != nil && !gameWeek.Start.IsZero() && !gameWeek.End.IsZero() &&
+			!now.Before(gameWeek.Start) && !now.After(gameWeek.End) {
+			return *gameWeek, true
+		}
+	}
+	if nearest.NextGameWeek != nil {
+		return *nearest.NextGameWeek, true
+	}
+	if nearest.PreviousGameWeek != nil {
+		return *nearest.PreviousGameWeek, true
+	}
+	return gameWeekDTO{}, false
 }
 
 type standingsResponse struct {

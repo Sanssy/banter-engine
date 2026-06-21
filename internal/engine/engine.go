@@ -107,7 +107,7 @@ func (e *Engine) runOnce() error {
 	if err != nil {
 		return err
 	}
-	matches, err := e.mpp.GetMatches()
+	matches, err := e.mpp.GetMatches(e.config.ChallengeID)
 	if err != nil {
 		return err
 	}
