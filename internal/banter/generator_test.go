@@ -90,6 +90,24 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			opportunity: opportunities.Opportunity{Type: opportunities.PredictionMassacre, Actor: "France - Espagne"},
 			want:        "☠️ Extinction des pronostics détectée sur France - Espagne.",
 		},
+		{
+			name: "hot streak",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.HotStreak,
+				Actor:  "Julien",
+				Target: "5",
+			},
+			want: "🔥 Julien enchaîne 5 pronostics réussis.",
+		},
+		{
+			name: "cold streak",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.ColdStreak,
+				Actor:  "William",
+				Target: "6",
+			},
+			want: "🥶 William reste sur 6 échecs consécutifs.",
+		},
 	}
 
 	for _, tt := range tests {

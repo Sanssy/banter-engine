@@ -1,7 +1,10 @@
 package matches
 
+import "time"
+
 type Match struct {
 	MatchID         string
+	Date            time.Time
 	HomeTeam        string
 	AwayTeam        string
 	Score           Score

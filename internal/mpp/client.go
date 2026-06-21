@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"time"
 
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
@@ -74,6 +75,7 @@ func (c *Client) GetMatches() ([]matches.Match, error) {
 
 		result = append(result, matches.Match{
 			MatchID:  matchID,
+			Date:     match.Date,
 			HomeTeam: clubName(apiClubs.ChampionshipClubs[match.Home.ClubID], match.Home.ClubID),
 			AwayTeam: clubName(apiClubs.ChampionshipClubs[match.Away.ClubID], match.Away.ClubID),
 			Score: matches.Score{
@@ -93,6 +95,12 @@ func (c *Client) GetMatches() ([]matches.Match, error) {
 			},
 		})
 	}
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Date.Equal(result[j].Date) {
+			return result[i].MatchID < result[j].MatchID
+		}
+		return result[i].Date.Before(result[j].Date)
+	})
 
 	return result, nil
 }
@@ -112,8 +120,9 @@ func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]foreca
 	result := make([]forecasts.Forecast, 0, len(apiForecasts))
 	for userID, forecast := range apiForecasts {
 		result = append(result, forecasts.Forecast{
-			UserID:  userID,
-			MatchID: match.MatchID,
+			UserID:    userID,
+			MatchID:   match.MatchID,
+			MatchDate: match.Date,
 			Prediction: matches.Score{
 				Home: forecast.HomeScore,
 				Away: forecast.AwayScore,
@@ -171,7 +180,8 @@ type standingDTO struct {
 }
 
 type matchDTO struct {
-	MatchID string `json:"matchId"`
+	MatchID string    `json:"matchId"`
+	Date    time.Time `json:"date"`
 	Home    struct {
 		ClubID string `json:"clubId"`
 		Score  int    `json:"score"`

@@ -31,6 +31,10 @@ func Generate(op opportunities.Opportunity) string {
 		return fmt.Sprintf("🔮 %s était le seul à y croire sur %s.", op.Actor, op.Target)
 	case opportunities.PredictionMassacre:
 		return fmt.Sprintf("☠️ Extinction des pronostics détectée sur %s.", op.Actor)
+	case opportunities.HotStreak:
+		return fmt.Sprintf("🔥 %s enchaîne %s pronostics réussis.", op.Actor, op.Target)
+	case opportunities.ColdStreak:
+		return fmt.Sprintf("🥶 %s reste sur %s échecs consécutifs.", op.Actor, op.Target)
 	default:
 		return fmt.Sprintf("%s: %s -> %s", op.Type, op.Actor, op.Target)
 	}

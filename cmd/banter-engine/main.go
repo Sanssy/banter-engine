@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/DSanoussy/banter-engine/internal/banter"
+	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/mpp"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 	"github.com/DSanoussy/banter-engine/internal/snapshot"
@@ -39,6 +40,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var forecastHistory []forecasts.Forecast
 	for _, match := range matches {
 		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
 
@@ -49,9 +51,15 @@ func main() {
 		for _, forecast := range forecasts {
 			fmt.Printf("  %s: %d-%d (%d points)\n", forecast.UserID, forecast.Prediction.Home, forecast.Prediction.Away, forecast.Points)
 		}
+		if match.Status == "fullTime" {
+			forecastHistory = append(forecastHistory, forecasts...)
+		}
 		for _, opportunity := range opportunities.DetectSurprises(match, forecasts) {
 			fmt.Println(banter.Generate(opportunity))
 		}
+	}
+	for _, opportunity := range opportunities.DetectStreaks(forecastHistory) {
+		fmt.Println(banter.Generate(opportunity))
 	}
 
 	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
