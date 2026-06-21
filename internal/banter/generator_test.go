@@ -12,7 +12,7 @@ func TestGenerateRankingOvertake(t *testing.T) {
 		Actor:  "Sanssy",
 		Target: "William",
 	}
-	want := "U0001f4c8 Sanssy dépasse William.\n\nWilliam aperçoit désormais son dos."
+	want := "📈 Sanssy dépasse William.\n\nWilliam aperçoit désormais son dos."
 
 	if got := Generate(opportunity); got != want {
 		t.Fatalf("Generate() = %q, want %q", got, want)

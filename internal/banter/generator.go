@@ -10,7 +10,7 @@ func Generate(op opportunities.Opportunity) string {
 	switch op.Type {
 	case opportunities.RankingOvertake:
 		return fmt.Sprintf(
-			"U0001f4c8 %s dépasse %s.\n\n%s aperçoit désormais son dos.",
+			"📈 %s dépasse %s.\n\n%s aperçoit désormais son dos.",
 			op.Actor,
 			op.Target,
 			op.Target,
