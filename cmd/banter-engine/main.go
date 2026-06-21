@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/DSanoussy/banter-engine/internal/banter"
 	"github.com/DSanoussy/banter-engine/internal/discord"
@@ -15,6 +16,7 @@ import (
 
 const challengeID = "mpp_challenge_UDKDDH27"
 const snapshotPath = "data/standings.json"
+const runInterval = 5 * time.Minute
 
 func main() {
 	token := os.Getenv("MPP_TOKEN")
@@ -26,15 +28,28 @@ func main() {
 		log.Fatal("DISCORD_WEBHOOK_URL environment variable is required")
 	}
 
+	client := mpp.NewClient(token)
+	discordClient := discord.NewClient(webhookURL)
+	ticker := time.NewTicker(runInterval)
+	defer ticker.Stop()
+
+	for {
+		if err := run(client, discordClient); err != nil {
+			log.Printf("banter engine run failed: %v", err)
+		}
+		<-ticker.C
+	}
+}
+
+func run(client *mpp.Client, discordClient *discord.Client) error {
 	previousStandings, err := snapshot.LoadStandings(snapshotPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	client := mpp.NewClient(token)
 	standings, err := client.GetStandings(challengeID)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for _, standing := range standings {
@@ -43,7 +58,7 @@ func main() {
 
 	matches, err := client.GetMatches()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var forecastHistory []forecasts.Forecast
 	var messages []string
@@ -52,7 +67,7 @@ func main() {
 
 		forecasts, err := client.GetForecasts(challengeID, match)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		for _, forecast := range forecasts {
 			fmt.Printf("  %s: %d-%d (%d points)\n", forecast.UserID, forecast.Prediction.Home, forecast.Prediction.Away, forecast.Points)
@@ -78,14 +93,14 @@ func main() {
 		messages = append(messages, message)
 	}
 
-	discordClient := discord.NewClient(webhookURL)
 	for _, message := range messages {
 		if err := discordClient.Send(message); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	if err := snapshot.SaveStandings(snapshotPath, standings); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
