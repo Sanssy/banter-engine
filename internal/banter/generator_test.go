@@ -199,6 +199,33 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "👑 Sanssy domine désormais sa rivalité avec William.",
 		},
+		{
+			name: "comeback season",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.ComebackSeason,
+				Actor:  "Sanssy",
+				Target: "3",
+			},
+			want: "🚀 Sanssy remonte de 3 places au classement.",
+		},
+		{
+			name: "free fall",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.FreeFall,
+				Actor:  "William",
+				Target: "4",
+			},
+			want: "🪂 William dégringole de 4 places au classement.",
+		},
+		{
+			name: "runaway leader",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.RunawayLeader,
+				Actor:  "Amine",
+				Target: "Sanssy",
+			},
+			want: "🏃 Amine creuse l'écart devant Sanssy.",
+		},
 	}
 
 	for _, tt := range tests {
