@@ -127,7 +127,19 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 		return nil, fmt.Errorf("decode clubs: %w", err)
 	}
 	c.logger.Info("club reference decoded clubs_count=%d", len(apiClubs.ChampionshipClubs))
-	for id, club := range apiClubs.ChampionshipClubs {
+	clubIDs := sortedClubIDs(apiClubs.ChampionshipClubs)
+	if len(clubIDs) > 0 {
+		firstID := clubIDs[0]
+		firstClub := apiClubs.ChampionshipClubs[firstID]
+		c.logger.Info(
+			"club reference first_club id=%s name=%s languages=%v",
+			firstID,
+			clubDisplayName(firstClub),
+			clubLanguages(firstClub),
+		)
+	}
+	for _, id := range clubIDs {
+		club := apiClubs.ChampionshipClubs[id]
 		c.resolver.RegisterClub(id, clubDisplayName(club))
 	}
 
@@ -142,9 +154,23 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 		}
 		if index < 5 {
 			c.logger.Info(
-				"match retrieval summary requested_match_id=%s summary_match_id=%s",
+				"match retrieval summary requested_match_id=%s summary_match_id=%s home_club_id=%s away_club_id=%s",
 				id,
 				match.MatchID,
+				match.Home.ClubID,
+				match.Away.ClubID,
+			)
+			homeClub, homeFound := apiClubs.ChampionshipClubs[match.Home.ClubID]
+			awayClub, awayFound := apiClubs.ChampionshipClubs[match.Away.ClubID]
+			c.logger.Info(
+				"club reference match_id=%s home_present=%t home_name=%s home_languages=%v away_present=%t away_name=%s away_languages=%v",
+				match.MatchID,
+				homeFound,
+				clubDisplayName(homeClub),
+				clubLanguages(homeClub),
+				awayFound,
+				clubDisplayName(awayClub),
+				clubLanguages(awayClub),
 			)
 		}
 
@@ -563,4 +589,30 @@ func clubDisplayName(club clubDTO) string {
 		return club.ShortName
 	}
 	return ""
+}
+
+func sortedClubIDs(clubs map[string]clubDTO) []string {
+	ids := make([]string, 0, len(clubs))
+	for id := range clubs {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func clubLanguages(club clubDTO) []string {
+	languages := make(map[string]struct{}, len(club.Lang)+len(club.Name))
+	for language := range club.Lang {
+		languages[language] = struct{}{}
+	}
+	for language := range club.Name {
+		languages[language] = struct{}{}
+	}
+
+	result := make([]string, 0, len(languages))
+	for language := range languages {
+		result = append(result, language)
+	}
+	sort.Strings(result)
+	return result
 }

@@ -31,10 +31,16 @@ func TestResolverResolvesClubsAndUsers(t *testing.T) {
 }
 
 func TestResolverDoesNotExposeUnknownTechnicalIDs(t *testing.T) {
-	resolver := New(&bytes.Buffer{})
+	var output bytes.Buffer
+	resolver := New(&output)
+	resolver.RegisterClub("mpp_championship_club_614", "Argentine")
+	resolver.RegisterClub("mpp_championship_club_367", "France")
 	for _, technicalID := range []string{"mpp_championship_club_999", "user_999"} {
 		if got := resolver.Resolve(technicalID); strings.Contains(got, technicalID) {
 			t.Errorf("Resolve(%q) exposed technical ID as %q", technicalID, got)
 		}
+	}
+	if expected := "club_lookup id=mpp_championship_club_999 found=false name=Equipe inconnue available_keys=[mpp_championship_club_367 mpp_championship_club_614]"; !strings.Contains(output.String(), expected) {
+		t.Errorf("resolver log does not contain %q: %s", expected, output.String())
 	}
 }

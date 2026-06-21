@@ -136,6 +136,9 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 		"requested_match_id=world-cup-match summary_match_id=world-cup-match",
 		"route=GET /championship-clubs",
 		"club reference decoded clubs_count=4",
+		"club reference first_club id=mpp_championship_club_1430 name=Guingamp languages=[]",
+		"requested_match_id=world-cup-match summary_match_id=world-cup-match home_club_id=mpp_championship_club_367 away_club_id=mpp_championship_club_522",
+		"club reference match_id=world-cup-match home_present=true home_name=Canada home_languages=[fr-FR] away_present=true away_name=Qatar away_languages=[]",
 		"match_id=world-cup-match home_team=Canada away_team=Qatar date=2026-06-21T16:00:00Z",
 	} {
 		if !strings.Contains(logOutput.String(), expected) {

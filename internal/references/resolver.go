@@ -2,6 +2,7 @@ package references
 
 import (
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/Sanssy/banter-engine/internal/logging"
@@ -47,14 +48,22 @@ func (r *Resolver) RegisterUser(id, name string) {
 
 func (r *Resolver) ClubName(id string) string {
 	name, found := r.clubs[id]
-	r.logger.Info("club_lookup id=%s found=%t name=%s", id, found, name)
 	if found {
+		r.logger.Info("club_lookup id=%s found=true name=%s", id, name)
 		return name
 	}
+
+	returnedName := id
 	if strings.HasPrefix(id, clubPrefix) {
-		return "Equipe inconnue"
+		returnedName = "Equipe inconnue"
 	}
-	return id
+	r.logger.Info(
+		"club_lookup id=%s found=false name=%s available_keys=%v",
+		id,
+		returnedName,
+		r.clubKeyPreview(10),
+	)
+	return returnedName
 }
 
 func (r *Resolver) UserName(id string) string {
@@ -78,4 +87,16 @@ func (r *Resolver) Resolve(value string) string {
 	default:
 		return value
 	}
+}
+
+func (r *Resolver) clubKeyPreview(limit int) []string {
+	keys := make([]string, 0, len(r.clubs))
+	for id := range r.clubs {
+		keys = append(keys, id)
+	}
+	sort.Strings(keys)
+	if len(keys) > limit {
+		keys = keys[:limit]
+	}
+	return keys
 }
