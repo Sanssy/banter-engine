@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Sanssy/banter-engine/internal/forecasts"
@@ -226,13 +229,23 @@ func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]foreca
 
 func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
 	path := "/championship-match/" + url.PathEscape(matchID)
-	var detail matchDetailDTO
-	if err := c.get(path, nil, &detail); err != nil {
+	c.logger.Info("match events route=GET url=%s%s", baseURL, path)
+	data, err := c.getRaw(path)
+	if err != nil {
 		return nil, fmt.Errorf("fetch match events: %w", err)
+	}
+	c.logger.Info("match events response match_id=%s body_preview=%s", matchID, previewBytes(data, 2048))
+
+	var detail matchDetailDTO
+	if err := json.Unmarshal(data, &detail); err != nil {
+		return nil, fmt.Errorf("decode match events: %w", err)
 	}
 
 	events := make([]matches.Event, 0, len(detail.EventsTimeline))
-	for _, event := range detail.EventsTimeline {
+	for index, event := range detail.EventsTimeline {
+		if index < 5 {
+			c.logger.Info("match events score event_index=%d raw=%s", index, event.Score.Raw)
+		}
 		events = append(events, matches.Event{
 			ID:       event.ID,
 			Type:     event.Type,
@@ -247,6 +260,14 @@ func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
 		})
 	}
 	return events, nil
+}
+
+func (c *Client) getRaw(path string) ([]byte, error) {
+	req, err := http.NewRequest(http.MethodGet, baseURL+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("create request: %w", err)
+	}
+	return c.execute(req)
 }
 
 func (c *Client) get(path string, query url.Values, target any) error {
@@ -277,22 +298,40 @@ func (c *Client) post(path string, body, target any) error {
 }
 
 func (c *Client) do(req *http.Request, target any) error {
+	data, err := c.execute(req)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, target); err != nil {
+		return fmt.Errorf("decode response: %w", err)
+	}
+	return nil
+}
+
+func (c *Client) execute(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", "Bearer "+c.token)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected HTTP status %s", resp.Status)
+		return nil, fmt.Errorf("unexpected HTTP status %s", resp.Status)
 	}
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response: %w", err)
+	}
+	return data, nil
+}
 
-	if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
-		return fmt.Errorf("decode response: %w", err)
+func previewBytes(data []byte, limit int) string {
+	if len(data) <= limit {
+		return string(data)
 	}
-	return nil
+	return string(data[:limit]) + "..."
 }
 
 type challengeDTO struct {
@@ -399,17 +438,61 @@ type matchDetailDTO struct {
 }
 
 type matchEventDTO struct {
-	ID          string `json:"eventId"`
-	Type        string `json:"eventType"`
-	GoalType    string `json:"goalType"`
-	BookingType string `json:"bookingType"`
-	Time        string `json:"time"`
-	Side        string `json:"side"`
-	PlayerID    string `json:"playerId"`
-	Score       struct {
-		Home int `json:"home"`
-		Away int `json:"away"`
-	} `json:"score"`
+	ID          string        `json:"eventId"`
+	Type        string        `json:"eventType"`
+	GoalType    string        `json:"goalType"`
+	BookingType string        `json:"bookingType"`
+	Time        string        `json:"time"`
+	Side        string        `json:"side"`
+	PlayerID    string        `json:"playerId"`
+	Score       eventScoreDTO `json:"score"`
+}
+
+type eventScoreDTO struct {
+	Home int
+	Away int
+	Raw  string
+}
+
+func (s *eventScoreDTO) UnmarshalJSON(data []byte) error {
+	s.Raw = string(data)
+	if len(data) == 0 || string(data) == "null" {
+		return nil
+	}
+	if data[0] == '{' {
+		var score struct {
+			Home int `json:"home"`
+			Away int `json:"away"`
+		}
+		if err := json.Unmarshal(data, &score); err != nil {
+			return err
+		}
+		s.Home = score.Home
+		s.Away = score.Away
+		return nil
+	}
+
+	var value string
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	parts := strings.FieldsFunc(value, func(separator rune) bool {
+		return separator == '-' || separator == ':'
+	})
+	if len(parts) != 2 {
+		return nil
+	}
+	home, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return nil
+	}
+	away, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return nil
+	}
+	s.Home = home
+	s.Away = away
+	return nil
 }
 
 func eventDetail(event matchEventDTO) string {

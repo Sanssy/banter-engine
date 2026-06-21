@@ -248,6 +248,66 @@ func TestGetMatchEvents(t *testing.T) {
 	}
 }
 
+func TestGetMatchEventsDecodesStringScore(t *testing.T) {
+	client := NewClient("test-token")
+	var logOutput bytes.Buffer
+	client.logger = logging.New(&logOutput, "mpp")
+	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		body := `{
+			"eventsTimeline": [{
+				"eventId": "event-1",
+				"eventType": "goal",
+				"time": "90' +2",
+				"side": "away",
+				"score": "1 - 2"
+			}]
+		}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Body:       io.NopCloser(strings.NewReader(body)),
+			Header:     make(http.Header),
+		}, nil
+	})
+
+	events, err := client.GetMatchEvents("mpp_championship_match_2608265")
+	if err != nil {
+		t.Fatalf("GetMatchEvents() error = %v", err)
+	}
+	if len(events) != 1 || events[0].Score != (matches.Score{Home: 1, Away: 2}) {
+		t.Fatalf("GetMatchEvents() = %#v, want string score decoded as 1-2", events)
+	}
+	for _, expected := range []string{
+		"url=https://api.mpp.football/championship-match/mpp_championship_match_2608265",
+		"body_preview=",
+		`raw=\"1 - 2\"`,
+	} {
+		if !strings.Contains(logOutput.String(), expected) {
+			t.Errorf("diagnostic log does not contain %q:\n%s", expected, logOutput.String())
+		}
+	}
+}
+
+func TestEventScoreDTOAcceptsSupportedFormats(t *testing.T) {
+	tests := []struct {
+		payload string
+		want    eventScoreDTO
+	}{
+		{payload: `{"home":2,"away":1}`, want: eventScoreDTO{Home: 2, Away: 1}},
+		{payload: `"2-1"`, want: eventScoreDTO{Home: 2, Away: 1}},
+		{payload: `"2 : 1"`, want: eventScoreDTO{Home: 2, Away: 1}},
+	}
+	for _, test := range tests {
+		var got eventScoreDTO
+		if err := json.Unmarshal([]byte(test.payload), &got); err != nil {
+			t.Fatalf("Unmarshal(%s) error = %v", test.payload, err)
+		}
+		if got.Home != test.want.Home || got.Away != test.want.Away {
+			t.Errorf("Unmarshal(%s) = %d-%d, want %d-%d", test.payload, got.Home, got.Away, test.want.Home, test.want.Away)
+		}
+	}
+}
+
 type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
