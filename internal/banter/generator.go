@@ -2,11 +2,24 @@ package banter
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/DSanoussy/banter-engine/internal/catalog"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 )
 
 func Generate(op opportunities.Opportunity) string {
+	return generate(op, "")
+}
+
+func GenerateWithDefinition(
+	op opportunities.Opportunity,
+	definition catalog.OpportunityDefinition,
+) string {
+	return generate(op, definition.Description)
+}
+
+func generate(op opportunities.Opportunity, description string) string {
 	switch op.Type {
 	case opportunities.RankingOvertake:
 		return fmt.Sprintf(
@@ -88,6 +101,10 @@ func Generate(op opportunities.Opportunity) string {
 	case opportunities.PodiumFight:
 		return fmt.Sprintf("🥉 %s met la pression sur %s pour le podium.", op.Actor, op.Target)
 	default:
-		return fmt.Sprintf("%s: %s -> %s", op.Type, op.Actor, op.Target)
+		if description == "" {
+			description = op.Type
+		}
+		description = strings.TrimSuffix(description, ".")
+		return fmt.Sprintf("%s: %s -> %s", description, op.Actor, op.Target)
 	}
 }

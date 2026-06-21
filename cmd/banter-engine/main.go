@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/DSanoussy/banter-engine/internal/banter"
+	"github.com/DSanoussy/banter-engine/internal/catalog"
+	"github.com/DSanoussy/banter-engine/internal/contextbuilder"
 	"github.com/DSanoussy/banter-engine/internal/discord"
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	matchmodel "github.com/DSanoussy/banter-engine/internal/matches"
@@ -21,6 +24,7 @@ const snapshotPath = "data/standings.json"
 const matchesSnapshotPath = "data/matches.json"
 const rivalriesSnapshotPath = "data/rivalries.json"
 const forecastsSnapshotPath = "data/forecasts.json"
+const opportunityCatalogPath = "resources/opportunities.json"
 const runInterval = 5 * time.Minute
 
 func main() {
@@ -35,18 +39,26 @@ func main() {
 
 	client := mpp.NewClient(token)
 	discordClient := discord.NewClient(webhookURL)
+	definitions, err := catalog.LoadOpportunityCatalog(opportunityCatalogPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 	ticker := time.NewTicker(runInterval)
 	defer ticker.Stop()
 
 	for {
-		if err := run(client, discordClient); err != nil {
+		if err := run(client, discordClient, definitions); err != nil {
 			log.Printf("banter engine run failed: %v", err)
 		}
 		<-ticker.C
 	}
 }
 
-func run(client *mpp.Client, discordClient *discord.Client) error {
+func run(
+	client *mpp.Client,
+	discordClient *discord.Client,
+	definitions []catalog.OpportunityDefinition,
+) error {
 	previousStandings, err := snapshot.LoadStandings(snapshotPath)
 	if err != nil {
 		return err
@@ -96,18 +108,10 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	}
 	var forecastHistory []forecasts.Forecast
 	var allForecasts []forecasts.Forecast
-	var messages []string
+	var detected []opportunities.Opportunity
 	updatedRivalries, rivalryOpportunities := rivalries.Update(standings, rivalryState)
-	for _, opportunity := range rivalryOpportunities {
-		message := banter.Generate(opportunity)
-		fmt.Println(message)
-		messages = append(messages, message)
-	}
-	for _, opportunity := range opportunities.DetectLiveUpdates(previousMatches, matches) {
-		message := banter.Generate(opportunity)
-		fmt.Println(message)
-		messages = append(messages, message)
-	}
+	detected = append(detected, rivalryOpportunities...)
+	detected = append(detected, opportunities.DetectLiveUpdates(previousMatches, matches)...)
 	for _, match := range matches {
 		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
 
@@ -122,42 +126,25 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 		if match.Status == "fullTime" {
 			forecastHistory = append(forecastHistory, forecasts...)
 		}
-		for _, opportunity := range opportunities.DetectSurprises(match, forecasts) {
-			message := banter.Generate(opportunity)
-			fmt.Println(message)
-			messages = append(messages, message)
-		}
+		detected = append(detected, opportunities.DetectSurprises(match, forecasts)...)
 		if previousMatch, ok := previousMatchesByID[match.MatchID]; ok {
-			for _, opportunity := range opportunities.DetectHeartbreaks(previousMatch, match, forecasts) {
-				message := banter.Generate(opportunity)
-				fmt.Println(message)
-				messages = append(messages, message)
-			}
-			for _, opportunity := range opportunities.DetectLatePointImpacts(previousMatch, match, previousForecasts, forecasts) {
-				message := banter.Generate(opportunity)
-				fmt.Println(message)
-				messages = append(messages, message)
-			}
+			detected = append(detected, opportunities.DetectHeartbreaks(previousMatch, match, forecasts)...)
+			detected = append(detected, opportunities.DetectLatePointImpacts(previousMatch, match, previousForecasts, forecasts)...)
 		}
 	}
-	for _, opportunity := range opportunities.DetectPointImpacts(previousForecasts, allForecasts) {
-		message := banter.Generate(opportunity)
-		fmt.Println(message)
-		messages = append(messages, message)
-	}
-	for _, opportunity := range opportunities.DetectStreaks(forecastHistory) {
-		message := banter.Generate(opportunity)
-		fmt.Println(message)
-		messages = append(messages, message)
-	}
+	detected = append(detected, opportunities.DetectPointImpacts(previousForecasts, allForecasts)...)
+	detected = append(detected, opportunities.DetectStreaks(forecastHistory)...)
+	detected = append(detected, opportunities.Detect(previousStandings, standings)...)
 
-	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
-		message := banter.Generate(opportunity)
+	banterContext := contextbuilder.Build(standings, allForecasts, matches, detected)
+	generator := banter.NewGenerator(nil)
+	for _, opportunity := range detected {
+		definition, err := catalog.ValidateOpportunity(definitions, opportunity)
+		if err != nil {
+			return err
+		}
+		message := generator.GenerateWithDefinition(context.Background(), opportunity, definition, banterContext)
 		fmt.Println(message)
-		messages = append(messages, message)
-	}
-
-	for _, message := range messages {
 		if err := discordClient.Send(message); err != nil {
 			return err
 		}

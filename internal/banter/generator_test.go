@@ -3,6 +3,7 @@ package banter
 import (
 	"testing"
 
+	"github.com/DSanoussy/banter-engine/internal/catalog"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 )
 
@@ -29,6 +30,19 @@ func TestGenerateUnknownOpportunity(t *testing.T) {
 
 	if got := Generate(opportunity); got != want {
 		t.Fatalf("Generate() = %q, want %q", got, want)
+	}
+}
+
+func TestGenerateWithDefinitionUsesCatalogDescriptionForFutureType(t *testing.T) {
+	opportunity := opportunities.Opportunity{Type: "FutureOpportunity", Actor: "Sanssy", Target: "William"}
+	definition := catalog.OpportunityDefinition{
+		ID:          opportunity.Type,
+		Description: "A future catalog-driven opportunity.",
+	}
+	want := "A future catalog-driven opportunity: Sanssy -> William"
+
+	if got := GenerateWithDefinition(opportunity, definition); got != want {
+		t.Fatalf("GenerateWithDefinition() = %q, want %q", got, want)
 	}
 }
 
