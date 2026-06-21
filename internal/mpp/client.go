@@ -99,6 +99,16 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 	if err := c.post("/championship-match/summaries", body, &apiMatches); err != nil {
 		return nil, fmt.Errorf("fetch match summaries: %w", err)
 	}
+	firstRequestedID := gameWeek.MatchIDs[0]
+	firstSummaryID := ""
+	if firstSummary := apiMatches[firstRequestedID]; firstSummary != nil {
+		firstSummaryID = firstSummary.MatchID
+	}
+	c.logger.Info(
+		"match retrieval first_summary requested_match_id=%s summary_match_id=%s",
+		firstRequestedID,
+		firstSummaryID,
+	)
 
 	var apiClubs clubsResponse
 	c.logMatchRoute(http.MethodGet, "/championship-clubs")

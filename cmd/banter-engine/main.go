@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/Sanssy/banter-engine/internal/config"
@@ -14,10 +15,31 @@ import (
 
 func main() {
 	logger := logging.New(os.Stderr, "main")
+	logBuildIdentity(logger)
 	if err := run(os.Args[1:]); err != nil {
 		logger.Error("%v", err)
 		os.Exit(1)
 	}
+}
+
+func logBuildIdentity(logger *logging.Logger) {
+	executable, err := os.Executable()
+	if err != nil {
+		executable = "unknown"
+	}
+	revision := "unknown"
+	modified := "unknown"
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				revision = setting.Value
+			case "vcs.modified":
+				modified = setting.Value
+			}
+		}
+	}
+	logger.Info("startup executable=%s revision=%s modified=%s", executable, revision, modified)
 }
 
 func run(args []string) error {

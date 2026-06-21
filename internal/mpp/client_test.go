@@ -133,6 +133,7 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 		"match_ids_count=1",
 		"match_ids_preview=[world-cup-match]",
 		"route=POST /championship-match/summaries",
+		"first_summary requested_match_id=world-cup-match summary_match_id=world-cup-match",
 		"requested_match_id=world-cup-match summary_match_id=world-cup-match",
 		"route=GET /championship-clubs",
 		"match_id=world-cup-match home_team=Canada away_team=Qatar date=2026-06-21T16:00:00Z",

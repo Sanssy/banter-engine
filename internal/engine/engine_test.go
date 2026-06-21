@@ -9,6 +9,7 @@ import (
 
 	"github.com/Sanssy/banter-engine/internal/config"
 	"github.com/Sanssy/banter-engine/internal/logging"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 func TestRunStopsWhenContextIsCanceled(t *testing.T) {
@@ -26,6 +27,15 @@ func TestRunStopsWhenContextIsCanceled(t *testing.T) {
 	}
 	if !strings.Contains(output.String(), "scheduler stopped") {
 		t.Fatalf("Run() output = %q, want shutdown log", output.String())
+	}
+}
+
+func TestFirstMatchID(t *testing.T) {
+	if got := firstMatchID(nil); got != "" {
+		t.Fatalf("firstMatchID(nil) = %q, want empty", got)
+	}
+	if got := firstMatchID([]matches.Match{{MatchID: "match-1"}, {MatchID: "match-2"}}); got != "match-1" {
+		t.Fatalf("firstMatchID() = %q, want match-1", got)
 	}
 }
 

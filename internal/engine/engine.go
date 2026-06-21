@@ -129,6 +129,11 @@ func (e *Engine) runOnce() error {
 		}
 		matches[i].Events = events
 	}
+	e.logger.Info(
+		"detectors will analyse %d matches, first=%s",
+		len(matches),
+		firstMatchID(matches),
+	)
 
 	var forecastHistory []forecasts.Forecast
 	var allForecasts []forecasts.Forecast
@@ -169,6 +174,12 @@ func (e *Engine) runOnce() error {
 	if err := snapshot.SaveStandings(e.snapshotPath("standings.json"), standings); err != nil {
 		return err
 	}
+	e.logger.Info(
+		"persisting %d matches, first=%s path=%s",
+		len(matches),
+		firstMatchID(matches),
+		e.snapshotPath("matches.json"),
+	)
 	if err := snapshot.SaveMatches(e.snapshotPath("matches.json"), matches); err != nil {
 		return err
 	}
@@ -192,4 +203,11 @@ func (e *Engine) publish(message string) error {
 
 func (e *Engine) snapshotPath(name string) string {
 	return filepath.Join(e.config.SnapshotDir, name)
+}
+
+func firstMatchID(matches []matchmodel.Match) string {
+	if len(matches) == 0 {
+		return ""
+	}
+	return matches[0].MatchID
 }
