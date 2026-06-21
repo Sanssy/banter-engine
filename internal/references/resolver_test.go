@@ -20,12 +20,12 @@ func TestResolverResolvesClubsAndUsers(t *testing.T) {
 	if got := resolver.UserName("user_11291094"); got != "LeDaveCoinCoin" {
 		t.Fatalf("UserName() = %q, want LeDaveCoinCoin", got)
 	}
-	for _, expected := range []string{
-		"club_lookup id=mpp_championship_club_614 found=true name=Argentine",
-		"user_lookup id=user_11291094 found=true username=LeDaveCoinCoin",
-	} {
-		if !strings.Contains(output.String(), expected) {
-			t.Errorf("resolver log does not contain %q: %s", expected, output.String())
+	if expected := "user reference loaded users_count=1"; !strings.Contains(output.String(), expected) {
+		t.Errorf("resolver log does not contain %q: %s", expected, output.String())
+	}
+	for _, removed := range []string{"club_lookup", "user_lookup"} {
+		if strings.Contains(output.String(), removed) {
+			t.Errorf("resolver log still contains investigation marker %q: %s", removed, output.String())
 		}
 	}
 }
@@ -40,7 +40,7 @@ func TestResolverDoesNotExposeUnknownTechnicalIDs(t *testing.T) {
 			t.Errorf("Resolve(%q) exposed technical ID as %q", technicalID, got)
 		}
 	}
-	if expected := "club_lookup id=mpp_championship_club_999 found=false name=Equipe inconnue available_keys=[mpp_championship_club_367 mpp_championship_club_614]"; !strings.Contains(output.String(), expected) {
-		t.Errorf("resolver log does not contain %q: %s", expected, output.String())
+	if output.Len() != 0 {
+		t.Errorf("unknown reference resolution emitted investigation logs: %s", output.String())
 	}
 }

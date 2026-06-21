@@ -132,24 +132,28 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 	}
 	for _, expected := range []string{
 		"challenge_id=challenge-1",
-		"route=GET /challenge/challenge-1",
 		"championship_id=8",
-		"route=GET /championship-calendar/8/nearest-game-weeks",
 		"game_week=2",
 		"match_ids_count=1",
-		"match_ids_preview=[world-cup-match]",
-		"route=POST /championship-match/summaries",
-		"first_summary requested_match_id=world-cup-match summary_match_id=world-cup-match",
-		"requested_match_id=world-cup-match summary_match_id=world-cup-match",
-		"route=GET /championship-clubs",
-		"club reference decoded clubs_count=4",
-		"club reference first_club id=mpp_championship_club_1430 name=Guingamp languages=[]",
-		"requested_match_id=world-cup-match summary_match_id=world-cup-match home_club_id=mpp_championship_club_367 away_club_id=mpp_championship_club_522",
-		"club reference match_id=world-cup-match home_present=true home_name=Tchéquie home_languages=[fr-FR] away_present=true away_name=Afrique du Sud away_languages=[fr-FR]",
-		"match_id=world-cup-match home_team=Tchéquie away_team=Afrique du Sud date=2026-06-21T16:00:00Z",
+		"club reference loaded clubs_count=4",
 	} {
 		if !strings.Contains(logOutput.String(), expected) {
-			t.Errorf("diagnostic log does not contain %q:\n%s", expected, logOutput.String())
+			t.Errorf("operational log does not contain %q:\n%s", expected, logOutput.String())
+		}
+	}
+	for _, removed := range []string{
+		"route=",
+		"body_preview=",
+		"match_ids_preview=",
+		"first_summary",
+		"match retrieval summary",
+		"club reference first_club",
+		"club reference match_id",
+		"match_build",
+		"match retrieval resolved",
+	} {
+		if strings.Contains(logOutput.String(), removed) {
+			t.Errorf("operational log still contains investigation marker %q:\n%s", removed, logOutput.String())
 		}
 	}
 }
@@ -301,14 +305,8 @@ func TestGetMatchEventsDecodesStringScore(t *testing.T) {
 	if len(events) != 1 || events[0].Score != (matches.Score{Home: 1, Away: 2}) {
 		t.Fatalf("GetMatchEvents() = %#v, want string score decoded as 1-2", events)
 	}
-	for _, expected := range []string{
-		"url=https://api.mpp.football/championship-match/mpp_championship_match_2608265",
-		"body_preview=",
-		`raw=\"1 - 2\"`,
-	} {
-		if !strings.Contains(logOutput.String(), expected) {
-			t.Errorf("diagnostic log does not contain %q:\n%s", expected, logOutput.String())
-		}
+	if logOutput.Len() != 0 {
+		t.Fatalf("GetMatchEvents() emitted investigation logs:\n%s", logOutput.String())
 	}
 }
 

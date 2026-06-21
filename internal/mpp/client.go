@@ -70,7 +70,6 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 
 	var challenge challengeDTO
 	challengePath := "/challenge/" + url.PathEscape(challengeID)
-	c.logMatchRoute(http.MethodGet, challengePath)
 	if err := c.get(challengePath, nil, &challenge); err != nil {
 		return nil, fmt.Errorf("fetch challenge: %w", err)
 	}
@@ -82,7 +81,6 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 
 	calendarPath := fmt.Sprintf("/championship-calendar/%d/nearest-game-weeks", championshipID)
 	var calendar nearestGameWeeksResponse
-	c.logMatchRoute(http.MethodGet, calendarPath)
 	if err := c.get(calendarPath, nil, &calendar); err != nil {
 		return nil, fmt.Errorf("fetch nearest game weeks: %w", err)
 	}
@@ -91,12 +89,9 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 		return nil, fmt.Errorf("championship %d has no current game week", championshipID)
 	}
 	c.logger.Info(
-		"match retrieval game_week=%d start=%s end=%s match_ids_count=%d match_ids_preview=%v",
+		"match retrieval game_week=%d match_ids_count=%d",
 		gameWeek.Number,
-		gameWeek.Start.Format(time.RFC3339),
-		gameWeek.End.Format(time.RFC3339),
 		len(gameWeek.MatchIDs),
-		previewStrings(gameWeek.MatchIDs, 10),
 	)
 	if len(gameWeek.MatchIDs) == 0 {
 		return []matches.Match{}, nil
@@ -104,77 +99,30 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 
 	var apiMatches map[string]*matchDTO
 	body := matchSummariesRequest{MatchIDs: gameWeek.MatchIDs}
-	c.logMatchRoute(http.MethodPost, "/championship-match/summaries")
 	if err := c.post("/championship-match/summaries", body, &apiMatches); err != nil {
 		return nil, fmt.Errorf("fetch match summaries: %w", err)
 	}
-	firstRequestedID := gameWeek.MatchIDs[0]
-	firstSummaryID := ""
-	if firstSummary := apiMatches[firstRequestedID]; firstSummary != nil {
-		firstSummaryID = firstSummary.MatchID
-	}
-	c.logger.Info(
-		"match retrieval first_summary requested_match_id=%s summary_match_id=%s",
-		firstRequestedID,
-		firstSummaryID,
-	)
 
 	var apiClubs clubsResponse
-	c.logMatchRoute(http.MethodGet, "/championship-clubs")
 	clubsData, err := c.getRaw("/championship-clubs", internationalEventAppContext)
 	if err != nil {
 		return nil, fmt.Errorf("fetch clubs: %w", err)
 	}
-	c.logger.Info("club reference response body_preview=%s", previewBytes(clubsData, 2048))
 	if err := json.Unmarshal(clubsData, &apiClubs); err != nil {
 		return nil, fmt.Errorf("decode clubs: %w", err)
 	}
-	c.logger.Info("club reference decoded clubs_count=%d", len(apiClubs.ChampionshipClubs))
 	clubIDs := sortedClubIDs(apiClubs.ChampionshipClubs)
-	if len(clubIDs) > 0 {
-		firstID := clubIDs[0]
-		firstClub := apiClubs.ChampionshipClubs[firstID]
-		c.logger.Info(
-			"club reference first_club id=%s name=%s languages=%v",
-			firstID,
-			clubDisplayName(firstClub),
-			clubLanguages(firstClub),
-		)
-	}
 	for _, id := range clubIDs {
 		club := apiClubs.ChampionshipClubs[id]
 		c.resolver.RegisterClub(id, clubDisplayName(club))
 	}
+	c.logger.Info("club reference loaded clubs_count=%d", len(apiClubs.ChampionshipClubs))
 
 	result := make([]matches.Match, 0, len(gameWeek.MatchIDs))
-	for index, id := range gameWeek.MatchIDs {
+	for _, id := range gameWeek.MatchIDs {
 		match := apiMatches[id]
 		if match == nil {
-			if index < 5 {
-				c.logger.Info("match retrieval summary requested_match_id=%s summary=nil", id)
-			}
 			continue
-		}
-		if index < 5 {
-			c.logger.Info(
-				"match retrieval summary requested_match_id=%s summary_match_id=%s home_club_id=%s away_club_id=%s",
-				id,
-				match.MatchID,
-				match.Home.ClubID,
-				match.Away.ClubID,
-			)
-			homeClub, homeFound := apiClubs.ChampionshipClubs[match.Home.ClubID]
-			awayClub, awayFound := apiClubs.ChampionshipClubs[match.Away.ClubID]
-			c.logger.Info(
-				"club reference match_id=%s home_present=%t home_name=%s home_languages=%v away_present=%t away_name=%s away_languages=%v",
-				match.MatchID,
-				homeFound,
-				clubDisplayName(homeClub),
-				clubLanguages(homeClub),
-				awayFound,
-				clubDisplayName(awayClub),
-				clubLanguages(awayClub),
-			)
 		}
 
 		matchID := match.MatchID
@@ -184,12 +132,6 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 
 		homeTeam := c.resolver.ClubName(match.Home.ClubID)
 		awayTeam := c.resolver.ClubName(match.Away.ClubID)
-		c.logger.Info(
-			"match_build match_id=%s home_team=%s away_team=%s",
-			matchID,
-			homeTeam,
-			awayTeam,
-		)
 		result = append(result, matches.Match{
 			MatchID:  matchID,
 			Date:     match.Date,
@@ -218,32 +160,7 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 		}
 		return result[i].Date.Before(result[j].Date)
 	})
-	for index, match := range result {
-		if index >= 5 {
-			break
-		}
-		c.logger.Info(
-			"match retrieval resolved index=%d match_id=%s home_team=%s away_team=%s date=%s",
-			index,
-			match.MatchID,
-			match.HomeTeam,
-			match.AwayTeam,
-			match.Date.Format(time.RFC3339),
-		)
-	}
-
 	return result, nil
-}
-
-func (c *Client) logMatchRoute(method, path string) {
-	c.logger.Info("match retrieval route=%s %s", method, path)
-}
-
-func previewStrings(values []string, limit int) []string {
-	if len(values) <= limit {
-		return values
-	}
-	return values[:limit]
 }
 
 func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]forecasts.Forecast, error) {
@@ -279,23 +196,17 @@ func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]foreca
 
 func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
 	path := "/championship-match/" + url.PathEscape(matchID)
-	c.logger.Info("match events route=GET url=%s%s", baseURL, path)
 	data, err := c.getRaw(path, "")
 	if err != nil {
 		return nil, fmt.Errorf("fetch match events: %w", err)
 	}
-	c.logger.Info("match events response match_id=%s body_preview=%s", matchID, previewBytes(data, 2048))
-
 	var detail matchDetailDTO
 	if err := json.Unmarshal(data, &detail); err != nil {
 		return nil, fmt.Errorf("decode match events: %w", err)
 	}
 
 	events := make([]matches.Event, 0, len(detail.EventsTimeline))
-	for index, event := range detail.EventsTimeline {
-		if index < 5 {
-			c.logger.Info("match events score event_index=%d raw=%s", index, event.Score.Raw)
-		}
+	for _, event := range detail.EventsTimeline {
 		events = append(events, matches.Event{
 			ID:       event.ID,
 			Type:     event.Type,
@@ -378,13 +289,6 @@ func (c *Client) execute(req *http.Request) ([]byte, error) {
 		return nil, fmt.Errorf("read response: %w", err)
 	}
 	return data, nil
-}
-
-func previewBytes(data []byte, limit int) string {
-	if len(data) <= limit {
-		return string(data)
-	}
-	return string(data[:limit]) + "..."
 }
 
 type challengeDTO struct {
@@ -604,21 +508,4 @@ func sortedClubIDs(clubs map[string]clubDTO) []string {
 	}
 	sort.Strings(ids)
 	return ids
-}
-
-func clubLanguages(club clubDTO) []string {
-	languages := make(map[string]struct{}, len(club.Lang)+len(club.Name))
-	for language := range club.Lang {
-		languages[language] = struct{}{}
-	}
-	for language := range club.Name {
-		languages[language] = struct{}{}
-	}
-
-	result := make([]string, 0, len(languages))
-	for language := range languages {
-		result = append(result, language)
-	}
-	sort.Strings(result)
-	return result
 }
