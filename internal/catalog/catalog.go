@@ -4,19 +4,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
+	"strings"
 )
 
 type OpportunityDefinition struct {
-	ID          string   `json:"id"`
-	Category    string   `json:"category"`
-	Severity    int      `json:"severity"`
-	Description string   `json:"description"`
-	Tags        []string `json:"tags"`
+	ID                   string         `json:"id"`
+	Name                 string         `json:"name"`
+	Category             string         `json:"category"`
+	Severity             int            `json:"severity"`
+	Description          string         `json:"description"`
+	RequiredData         []string       `json:"requiredData"`
+	Trigger              map[string]any `json:"trigger"`
+	BanterAngles         []string       `json:"banterAngles"`
+	RelatedOpportunities []string       `json:"relatedOpportunities"`
+	Tags                 []string       `json:"tags"`
 }
 
-func LoadOpportunityCatalog(path string) ([]OpportunityDefinition, error) {
+type Catalog struct {
+	definitions []OpportunityDefinition
+	byID        map[string]OpportunityDefinition
+}
+
+func LoadCatalog(path string) (*Catalog, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read opportunity catalog: %w", err)
@@ -29,30 +38,46 @@ func LoadOpportunityCatalog(path string) ([]OpportunityDefinition, error) {
 	if err := validateDefinitions(definitions); err != nil {
 		return nil, err
 	}
-	return definitions, nil
+
+	byID := make(map[string]OpportunityDefinition, len(definitions))
+	for _, definition := range definitions {
+		byID[definition.ID] = definition
+	}
+	return &Catalog{definitions: definitions, byID: byID}, nil
 }
 
-func FindOpportunity(
-	definitions []OpportunityDefinition,
-	id string,
-) (OpportunityDefinition, bool) {
-	for _, definition := range definitions {
-		if definition.ID == id {
-			return definition, true
+func (c *Catalog) Len() int {
+	return len(c.definitions)
+}
+
+func (c *Catalog) FindByID(id string) (OpportunityDefinition, bool) {
+	definition, found := c.byID[id]
+	return definition, found
+}
+
+func (c *Catalog) FindByCategory(category string) []OpportunityDefinition {
+	var matches []OpportunityDefinition
+	for _, definition := range c.definitions {
+		if definition.Category == category {
+			matches = append(matches, definition)
 		}
 	}
-	return OpportunityDefinition{}, false
+	return matches
 }
 
-func ValidateOpportunity(
-	definitions []OpportunityDefinition,
-	opportunity opportunities.Opportunity,
-) (OpportunityDefinition, error) {
-	definition, found := FindOpportunity(definitions, opportunity.Type)
+func (c *Catalog) FindRelated(id string) []OpportunityDefinition {
+	definition, found := c.FindByID(id)
 	if !found {
-		return OpportunityDefinition{}, fmt.Errorf("unknown opportunity %q", opportunity.Type)
+		return nil
 	}
-	return definition, nil
+
+	result := make([]OpportunityDefinition, 0, len(definition.RelatedOpportunities))
+	for _, relatedID := range definition.RelatedOpportunities {
+		if related, found := c.FindByID(relatedID); found {
+			result = append(result, related)
+		}
+	}
+	return result
 }
 
 func validateDefinitions(definitions []OpportunityDefinition) error {
@@ -61,11 +86,26 @@ func validateDefinitions(definitions []OpportunityDefinition) error {
 	}
 	seen := make(map[string]struct{}, len(definitions))
 	for i, definition := range definitions {
-		if definition.ID == "" || definition.Category == "" || definition.Description == "" {
-			return fmt.Errorf("opportunity definition at index %d is incomplete", i)
+		if strings.TrimSpace(definition.ID) == "" || strings.TrimSpace(definition.Name) == "" {
+			return fmt.Errorf("opportunity definition at index %d is missing id or name", i)
+		}
+		if !validCategory(definition.Category) {
+			return fmt.Errorf("opportunity %q has invalid category %q", definition.ID, definition.Category)
 		}
 		if definition.Severity < 1 || definition.Severity > 5 {
 			return fmt.Errorf("opportunity %q has invalid severity %d", definition.ID, definition.Severity)
+		}
+		if strings.TrimSpace(definition.Description) == "" {
+			return fmt.Errorf("opportunity %q has no description", definition.ID)
+		}
+		if len(definition.RequiredData) == 0 || len(definition.Trigger) == 0 || len(definition.BanterAngles) == 0 {
+			return fmt.Errorf("opportunity %q has incomplete detection metadata", definition.ID)
+		}
+		if definition.RelatedOpportunities == nil {
+			return fmt.Errorf("opportunity %q is missing related opportunities", definition.ID)
+		}
+		if len(definition.Tags) == 0 {
+			return fmt.Errorf("opportunity %q has no tags", definition.ID)
 		}
 		if _, duplicate := seen[definition.ID]; duplicate {
 			return fmt.Errorf("duplicate opportunity %q", definition.ID)
@@ -73,4 +113,13 @@ func validateDefinitions(definitions []OpportunityDefinition) error {
 		seen[definition.ID] = struct{}{}
 	}
 	return nil
+}
+
+func validCategory(category string) bool {
+	switch category {
+	case "Ranking", "Predictions", "Crowd", "MatchEvents", "Narratives":
+		return true
+	default:
+		return false
+	}
 }

@@ -1,39 +1,2765 @@
 [
-  {"id":"RankingOvertake","category":"Ranking","severity":2,"description":"A player overtakes another player in the standings.","tags":["ranking","leaderboard"]},
-  {"id":"EnteredTop3","category":"Ranking","severity":3,"description":"A player enters the top three.","tags":["ranking","podium"]},
-  {"id":"ExitedTop3","category":"Ranking","severity":3,"description":"A player exits the top three.","tags":["ranking","podium"]},
-  {"id":"LeaderUnderPressure","category":"Ranking","severity":3,"description":"The leader's points advantage shrinks.","tags":["ranking","leader"]},
-  {"id":"LastPlaceLocked","category":"Ranking","severity":2,"description":"The same player remains in last place.","tags":["ranking","last-place"]},
-  {"id":"ComebackSeason","category":"Ranking","severity":3,"description":"A player climbs at least three positions.","tags":["ranking","comeback"]},
-  {"id":"FreeFall","category":"Ranking","severity":3,"description":"A player drops at least three positions.","tags":["ranking","collapse"]},
-  {"id":"RunawayLeader","category":"Ranking","severity":3,"description":"The leader materially increases the lead.","tags":["ranking","leader"]},
-  {"id":"PodiumFight","category":"Ranking","severity":3,"description":"Fourth place closes in on the podium.","tags":["ranking","podium"]},
-  {"id":"HugeUpset","category":"Predictions","severity":4,"description":"The match favorite fails to win.","tags":["match","upset","odds"]},
-  {"id":"EveryoneWasWrong","category":"Crowd","severity":4,"description":"More than 80 percent backed the same wrong outcome.","tags":["crowd","failure"]},
-  {"id":"TheChosenOne","category":"Predictions","severity":4,"description":"Exactly one player picked a rare correct outcome.","tags":["prediction","prophet"]},
-  {"id":"AgainstTheCrowd","category":"Crowd","severity":3,"description":"A player picked a rare correct outcome.","tags":["crowd","prediction"]},
-  {"id":"CrowdFavorite","category":"Crowd","severity":1,"description":"At least 60 percent back the same outcome.","tags":["crowd","distribution"]},
-  {"id":"CrowdTrap","category":"Crowd","severity":2,"description":"The crowd backs an outcome other than the betting favorite.","tags":["crowd","odds"]},
-  {"id":"PopularMistake","category":"Crowd","severity":3,"description":"The crowd's popular outcome is wrong.","tags":["crowd","failure"]},
-  {"id":"PredictionMassacre","category":"Crowd","severity":4,"description":"More than half of predictions are wrong.","tags":["crowd","massacre"]},
-  {"id":"HotStreak","category":"Streaks","severity":3,"description":"A player has at least five consecutive successes.","tags":["streak","success"]},
-  {"id":"ColdStreak","category":"Streaks","severity":3,"description":"A player has at least five consecutive failures.","tags":["streak","failure"]},
-  {"id":"MatchStarted","category":"Match Events","severity":1,"description":"A match transitions to live.","tags":["match","live"]},
-  {"id":"MatchEnded","category":"Match Events","severity":1,"description":"A live match reaches full time.","tags":["match","live"]},
-  {"id":"ScoreChanged","category":"Match Events","severity":2,"description":"A live match score changes.","tags":["match","score"]},
-  {"id":"ImportantMatchEvent","category":"Match Events","severity":2,"description":"A new important match event occurs.","tags":["match","event"]},
-  {"id":"GoalSwing","category":"Match Events","severity":3,"description":"A goal changes the live score.","tags":["match","goal"]},
-  {"id":"MatchTurnaround","category":"Match Events","severity":4,"description":"The winning side changes during a match.","tags":["match","turnaround"]},
-  {"id":"EqualizerChaos","category":"Match Events","severity":3,"description":"A goal brings a live match level.","tags":["match","equalizer"]},
-  {"id":"BiggestWinner","category":"Predictions","severity":3,"description":"A user records the largest point gain.","tags":["points","winner"]},
-  {"id":"BiggestLoser","category":"Predictions","severity":3,"description":"A user records the largest point loss.","tags":["points","loser"]},
-  {"id":"PointExplosion","category":"Predictions","severity":4,"description":"A user gains at least five points at once.","tags":["points","explosion"]},
-  {"id":"90thMinuteHeartbreak","category":"Match Events","severity":5,"description":"A late goal destroys an exact forecast.","tags":["live","heartbreak"]},
-  {"id":"AddedTimeDisaster","category":"Match Events","severity":5,"description":"An added-time event costs a user points.","tags":["live","heartbreak"]},
-  {"id":"LastMinuteHero","category":"Match Events","severity":5,"description":"A late event earns a user points.","tags":["live","hero"]},
-  {"id":"VARVictim","category":"Match Events","severity":4,"description":"A VAR decision destroys a forecast.","tags":["live","var"]},
-  {"id":"RedCardDisaster","category":"Match Events","severity":4,"description":"A red card threatens a forecast.","tags":["live","red-card"]},
-  {"id":"Nemesis","category":"Season Narratives","severity":3,"description":"A player records a third head-to-head win.","tags":["rivalry","nemesis"]},
-  {"id":"Revenge","category":"Season Narratives","severity":3,"description":"A player reverses the latest head-to-head result.","tags":["rivalry","revenge"]},
-  {"id":"Dominance","category":"Season Narratives","severity":4,"description":"A player leads a rivalry by at least three wins.","tags":["rivalry","dominance"]}
+  {
+    "id": "EveryoneWasWrong",
+    "name": "Everyone Was Wrong",
+    "category": "Crowd",
+    "severity": 5,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "EveryoneWasWrong"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "EveryoneWasRight",
+    "name": "Everyone Was Right",
+    "category": "Crowd",
+    "severity": 2,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "EveryoneWasRight"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "PredictionMassacre",
+    "name": "Prediction Massacre",
+    "category": "Crowd",
+    "severity": 5,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PredictionMassacre"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "TheChosenOne",
+    "name": "The Chosen One",
+    "category": "Crowd",
+    "severity": 5,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "TheChosenOne"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "AgainstTheCrowd",
+    "name": "Against The Crowd",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "AgainstTheCrowd"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "CrowdFavorite",
+    "name": "Crowd Favorite",
+    "category": "Crowd",
+    "severity": 2,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "CrowdFavorite"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "CrowdTrap",
+    "name": "Crowd Trap",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "CrowdTrap"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "PopularMistake",
+    "name": "Popular Mistake",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PopularMistake"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "PopularWisdom",
+    "name": "Popular Wisdom",
+    "category": "Crowd",
+    "severity": 2,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PopularWisdom"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "LoneWolf",
+    "name": "Lone Wolf",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "LoneWolf"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "ContrarianVictory",
+    "name": "Contrarian Victory",
+    "category": "Crowd",
+    "severity": 5,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ContrarianVictory"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "ContrarianFailure",
+    "name": "Contrarian Failure",
+    "category": "Crowd",
+    "severity": 3,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ContrarianFailure"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "MajorityCollapse",
+    "name": "Majority Collapse",
+    "category": "Crowd",
+    "severity": 5,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "MajorityCollapse"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "MinorityCelebration",
+    "name": "Minority Celebration",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "MinorityCelebration"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "HerdMentality",
+    "name": "Herd Mentality",
+    "category": "Crowd",
+    "severity": 3,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "HerdMentality"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "CrowdSwing",
+    "name": "Crowd Swing",
+    "category": "Crowd",
+    "severity": 3,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "CrowdSwing"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "ConsensusCrash",
+    "name": "Consensus Crash",
+    "category": "Crowd",
+    "severity": 5,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ConsensusCrash"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "ConsensusHero",
+    "name": "Consensus Hero",
+    "category": "Crowd",
+    "severity": 2,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ConsensusHero"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "PublicEnemy",
+    "name": "Public Enemy",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PublicEnemy"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "CrowdPunishment",
+    "name": "Crowd Punishment",
+    "category": "Crowd",
+    "severity": 4,
+    "description": "Crowd-driven opportunity based on collective prediction behaviour.",
+    "requiredData": [
+      "forecasts",
+      "standings",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "CrowdPunishment"
+    },
+    "banterAngles": [
+      "crowd_humiliation",
+      "consensus",
+      "collective_failure"
+    ],
+    "relatedOpportunities": [
+      "PredictionMassacre",
+      "MajorityCollapse",
+      "CrowdTrap"
+    ],
+    "tags": [
+      "crowd",
+      "consensus"
+    ]
+  },
+  {
+    "id": "GoalSwing",
+    "name": "Goal Swing",
+    "category": "MatchEvents",
+    "severity": 3,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "GoalSwing"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "EqualizerChaos",
+    "name": "Equalizer Chaos",
+    "category": "MatchEvents",
+    "severity": 3,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "EqualizerChaos"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "MatchTurnaround",
+    "name": "Match Turnaround",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "MatchTurnaround"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "LateWinner",
+    "name": "Late Winner",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "LateWinner"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "LateEqualizer",
+    "name": "Late Equalizer",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "LateEqualizer"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "NinetiethMinuteHeartbreak",
+    "name": "90th Minute Heartbreak",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "NinetiethMinuteHeartbreak"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "AddedTimeDisaster",
+    "name": "Added Time Disaster",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "AddedTimeDisaster"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "AddedTimeHero",
+    "name": "Added Time Hero",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "AddedTimeHero"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "RedCardDisaster",
+    "name": "Red Card Disaster",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "RedCardDisaster"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "RedCardBenefit",
+    "name": "Red Card Benefit",
+    "category": "MatchEvents",
+    "severity": 3,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "RedCardBenefit"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "VARVictim",
+    "name": "VAR Victim",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "VARVictim"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "VARHero",
+    "name": "VAR Hero",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "VARHero"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "PenaltyHero",
+    "name": "Penalty Hero",
+    "category": "MatchEvents",
+    "severity": 3,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "PenaltyHero"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "PenaltyVillain",
+    "name": "Penalty Villain",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "PenaltyVillain"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "ChaosMatch",
+    "name": "Chaos Match",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "ChaosMatch"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "MissedPenaltyRelief",
+    "name": "Missed Penalty Relief",
+    "category": "MatchEvents",
+    "severity": 3,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "MissedPenaltyRelief"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "OwnGoalShock",
+    "name": "Own Goal Shock",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "OwnGoalShock"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "OffsideHeartbreak",
+    "name": "Offside Heartbreak",
+    "category": "MatchEvents",
+    "severity": 4,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "OffsideHeartbreak"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "LastKickWinner",
+    "name": "Last Kick Winner",
+    "category": "MatchEvents",
+    "severity": 5,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "LastKickWinner"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "GoalFest",
+    "name": "Goal Fest",
+    "category": "MatchEvents",
+    "severity": 3,
+    "description": "Match event creating a significant emotional swing.",
+    "requiredData": [
+      "matches",
+      "matchEvents",
+      "forecasts"
+    ],
+    "trigger": {
+      "detectionRule": "GoalFest"
+    },
+    "banterAngles": [
+      "drama",
+      "heartbreak",
+      "celebration"
+    ],
+    "relatedOpportunities": [
+      "LateWinner",
+      "MatchTurnaround",
+      "ChaosMatch"
+    ],
+    "tags": [
+      "match",
+      "live"
+    ]
+  },
+  {
+    "id": "RivalryBorn",
+    "name": "Rivalry Born",
+    "category": "Narratives",
+    "severity": 3,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "RivalryBorn"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "Nemesis",
+    "name": "Nemesis",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "Nemesis"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "Revenge",
+    "name": "Revenge",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "Revenge"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "Dominance",
+    "name": "Dominance",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "Dominance"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "HistoricCollapse",
+    "name": "Historic Collapse",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "HistoricCollapse"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "CinderellaStory",
+    "name": "Cinderella Story",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "CinderellaStory"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "PodiumRegular",
+    "name": "Podium Regular",
+    "category": "Narratives",
+    "severity": 3,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "PodiumRegular"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "KingOfDraws",
+    "name": "King Of Draws",
+    "category": "Narratives",
+    "severity": 2,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "KingOfDraws"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "KingOfExactScores",
+    "name": "King Of Exact Scores",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "KingOfExactScores"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "HallOfShameCandidate",
+    "name": "Hall Of Shame Candidate",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "HallOfShameCandidate"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "HallOfFameCandidate",
+    "name": "Hall Of Fame Candidate",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "HallOfFameCandidate"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "SeasonMVP",
+    "name": "Season MVP",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "SeasonMVP"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "SeasonFraud",
+    "name": "Season Fraud",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "SeasonFraud"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "LastDayDrama",
+    "name": "Last Day Drama",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "LastDayDrama"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "ChampionElect",
+    "name": "Champion Elect",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "ChampionElect"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "UnderdogLegend",
+    "name": "Underdog Legend",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "UnderdogLegend"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "Dynasty",
+    "name": "Dynasty",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "Dynasty"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "RedemptionArc",
+    "name": "Redemption Arc",
+    "category": "Narratives",
+    "severity": 4,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "RedemptionArc"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "FallenKing",
+    "name": "Fallen King",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "FallenKing"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "TitleRace",
+    "name": "Title Race",
+    "category": "Narratives",
+    "severity": 5,
+    "description": "Season-long narrative opportunity emerging from player behaviour and standings evolution.",
+    "requiredData": [
+      "standings",
+      "forecasts",
+      "snapshots"
+    ],
+    "trigger": {
+      "detectionRule": "TitleRace"
+    },
+    "banterAngles": [
+      "legacy",
+      "reputation",
+      "narrative"
+    ],
+    "relatedOpportunities": [
+      "SeasonMVP",
+      "SeasonFraud",
+      "ChampionElect"
+    ],
+    "tags": [
+      "narrative",
+      "season"
+    ]
+  },
+  {
+    "id": "PerfectPrediction",
+    "name": "Perfect Prediction",
+    "category": "Predictions",
+    "severity": 5,
+    "description": "Exact score prediction achieved.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PerfectPrediction"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "AlmostPerfectPrediction",
+    "name": "Almost Perfect Prediction",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "One goal away from exact score.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "AlmostPerfectPrediction"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "LuckyPrediction",
+    "name": "Lucky Prediction",
+    "category": "Predictions",
+    "severity": 2,
+    "description": "Correct outcome despite low confidence.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "LuckyPrediction"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "DisasterPrediction",
+    "name": "Disaster Prediction",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Prediction completely misses reality.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "DisasterPrediction"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "LastMinutePrediction",
+    "name": "Last Minute Prediction",
+    "category": "Predictions",
+    "severity": 2,
+    "description": "Forecast submitted just before kickoff.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "LastMinutePrediction"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "WeekendMaster",
+    "name": "Weekend Master",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Outstanding prediction performance during a round.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "WeekendMaster"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "WeekendDisaster",
+    "name": "Weekend Disaster",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Very poor prediction performance during a round.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "WeekendDisaster"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "ScoreOracle",
+    "name": "Score Oracle",
+    "category": "Predictions",
+    "severity": 5,
+    "description": "Multiple exact scores achieved in same round.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ScoreOracle"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "DrawSpecialist",
+    "name": "Draw Specialist",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "Repeated success predicting draws.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "DrawSpecialist"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "FavoriteHunter",
+    "name": "Favorite Hunter",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "Repeated success on favorites.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "FavoriteHunter"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "UnderdogBeliever",
+    "name": "Underdog Believer",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Repeated success on underdogs.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "UnderdogBeliever"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "RiskReward",
+    "name": "Risk Reward",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "High-risk prediction pays off.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "RiskReward"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "SafeBetFailure",
+    "name": "Safe Bet Failure",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Consensus safe prediction fails.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "SafeBetFailure"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "SafeBetSuccess",
+    "name": "Safe Bet Success",
+    "category": "Predictions",
+    "severity": 2,
+    "description": "Consensus safe prediction succeeds.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "SafeBetSuccess"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "ExactScoreMachine",
+    "name": "Exact Score Machine",
+    "category": "Predictions",
+    "severity": 5,
+    "description": "Many exact scores over time.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ExactScoreMachine"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "ExactScoreDrought",
+    "name": "Exact Score Drought",
+    "category": "Predictions",
+    "severity": 2,
+    "description": "Long period without exact scores.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "ExactScoreDrought"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "PredictionKing",
+    "name": "Prediction King",
+    "category": "Predictions",
+    "severity": 5,
+    "description": "Best predictor in standings.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PredictionKing"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "PredictionFraud",
+    "name": "Prediction Fraud",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Persistently poor predictor.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PredictionFraud"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "AllOrNothing",
+    "name": "All Or Nothing",
+    "category": "Predictions",
+    "severity": 3,
+    "description": "Extreme variance between rounds.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "AllOrNothing"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "PredictionSniper",
+    "name": "Prediction Sniper",
+    "category": "Predictions",
+    "severity": 4,
+    "description": "Rare predictions with high precision.",
+    "requiredData": [
+      "forecasts",
+      "matchResults"
+    ],
+    "trigger": {
+      "detectionRule": "PredictionSniper"
+    },
+    "banterAngles": [
+      "predictions",
+      "confidence",
+      "accuracy"
+    ],
+    "relatedOpportunities": [
+      "PredictionKing",
+      "PredictionFraud"
+    ],
+    "tags": [
+      "predictions",
+      "forecasts"
+    ]
+  },
+  {
+    "id": "RankingOvertake",
+    "name": "Ranking Overtake",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "A player overtakes another player.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "rankImprovement": 1
+    },
+    "overtakenPlayers": 1,
+    "banterAngles": [
+      "superiority",
+      "overtake",
+      "humiliation"
+    ],
+    "relatedOpportunities": [
+      "DoubleOvertake",
+      "BiggestClimber"
+    ],
+    "tags": [
+      "ranking",
+      "movement"
+    ]
+  },
+  {
+    "id": "DoubleOvertake",
+    "name": "Double Overtake",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "A player overtakes two players.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "rankImprovement": 2
+    },
+    "overtakenPlayers": 2,
+    "banterAngles": [
+      "momentum",
+      "dominance"
+    ],
+    "relatedOpportunities": [
+      "TripleOvertake",
+      "BiggestClimber"
+    ],
+    "tags": [
+      "ranking",
+      "movement"
+    ]
+  },
+  {
+    "id": "TripleOvertake",
+    "name": "Triple Overtake",
+    "category": "Ranking",
+    "severity": 4,
+    "description": "A player overtakes three or more players.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "rankImprovement": 3
+    },
+    "overtakenPlayers": 3,
+    "banterAngles": [
+      "shock",
+      "dominance"
+    ],
+    "relatedOpportunities": [
+      "BiggestClimber",
+      "ComebackSeason"
+    ],
+    "tags": [
+      "ranking",
+      "surge"
+    ]
+  },
+  {
+    "id": "EnteredTop3",
+    "name": "Entered Top 3",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "A player enters the podium.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "newRankMax": 3
+    },
+    "banterAngles": [
+      "glory",
+      "arrival"
+    ],
+    "relatedOpportunities": [
+      "NewLeader",
+      "PodiumGuardian"
+    ],
+    "tags": [
+      "ranking",
+      "podium"
+    ]
+  },
+  {
+    "id": "ExitedTop3",
+    "name": "Exited Top 3",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "A player leaves the podium.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "oldRankMax": 3
+    },
+    "banterAngles": [
+      "fall",
+      "pressure"
+    ],
+    "relatedOpportunities": [
+      "FreeFall",
+      "PodiumGuardian"
+    ],
+    "tags": [
+      "ranking",
+      "podium"
+    ]
+  },
+  {
+    "id": "EnteredTop10",
+    "name": "Entered Top 10",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "A player enters top ten.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "newRankMax": 10
+    },
+    "banterAngles": [
+      "recognition"
+    ],
+    "relatedOpportunities": [
+      "RankingOvertake"
+    ],
+    "tags": [
+      "ranking",
+      "top10"
+    ]
+  },
+  {
+    "id": "ExitedTop10",
+    "name": "Exited Top 10",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "A player exits top ten.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "oldRankMax": 10
+    },
+    "banterAngles": [
+      "decline"
+    ],
+    "relatedOpportunities": [
+      "FreeFall"
+    ],
+    "tags": [
+      "ranking",
+      "top10"
+    ]
+  },
+  {
+    "id": "NewLeader",
+    "name": "New Leader",
+    "category": "Ranking",
+    "severity": 5,
+    "description": "Leadership changes.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "rank": 1
+    },
+    "banterAngles": [
+      "crowning",
+      "dominance"
+    ],
+    "relatedOpportunities": [
+      "LeaderUnderPressure"
+    ],
+    "tags": [
+      "ranking",
+      "leader"
+    ]
+  },
+  {
+    "id": "LeaderUnderPressure",
+    "name": "Leader Under Pressure",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Leader has tiny advantage.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "gapMax": 10
+    },
+    "banterAngles": [
+      "stress",
+      "chase"
+    ],
+    "relatedOpportunities": [
+      "NewLeader",
+      "PhotoFinish"
+    ],
+    "tags": [
+      "leader",
+      "gap"
+    ]
+  },
+  {
+    "id": "RunawayLeader",
+    "name": "Runaway Leader",
+    "category": "Ranking",
+    "severity": 4,
+    "description": "Leader has huge advantage.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "gapMin": 100
+    },
+    "banterAngles": [
+      "untouchable",
+      "dominance"
+    ],
+    "relatedOpportunities": [
+      "NewLeader"
+    ],
+    "tags": [
+      "leader",
+      "gap"
+    ]
+  },
+  {
+    "id": "PhotoFinish",
+    "name": "Photo Finish",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Very small gap between rivals.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "gapMax": 5
+    },
+    "banterAngles": [
+      "tension",
+      "race"
+    ],
+    "relatedOpportunities": [
+      "DeadHeat"
+    ],
+    "tags": [
+      "ranking",
+      "close"
+    ]
+  },
+  {
+    "id": "DeadHeat",
+    "name": "Dead Heat",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "Players have equal points.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "equalPoints": true
+    },
+    "banterAngles": [
+      "stalemate"
+    ],
+    "relatedOpportunities": [
+      "PhotoFinish"
+    ],
+    "tags": [
+      "ranking",
+      "tie"
+    ]
+  },
+  {
+    "id": "LastPlaceLocked",
+    "name": "Last Place Locked",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "Same player stays last for long period.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "weeksLastPlace": 4
+    },
+    "banterAngles": [
+      "mockery",
+      "struggle"
+    ],
+    "relatedOpportunities": [
+      "EscapedLastPlace"
+    ],
+    "tags": [
+      "ranking",
+      "bottom"
+    ]
+  },
+  {
+    "id": "EscapedLastPlace",
+    "name": "Escaped Last Place",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Player leaves last place.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "leftLastPlace": true
+    },
+    "banterAngles": [
+      "survival",
+      "relief"
+    ],
+    "relatedOpportunities": [
+      "LastPlaceLocked"
+    ],
+    "tags": [
+      "ranking",
+      "bottom"
+    ]
+  },
+  {
+    "id": "ComebackSeason",
+    "name": "Comeback Season",
+    "category": "Ranking",
+    "severity": 4,
+    "description": "Large positive ranking recovery.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "placesGained": 10
+    },
+    "banterAngles": [
+      "redemption"
+    ],
+    "relatedOpportunities": [
+      "BiggestClimber"
+    ],
+    "tags": [
+      "ranking",
+      "comeback"
+    ]
+  },
+  {
+    "id": "FreeFall",
+    "name": "Free Fall",
+    "category": "Ranking",
+    "severity": 4,
+    "description": "Large ranking collapse.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "placesLost": 10
+    },
+    "banterAngles": [
+      "collapse",
+      "panic"
+    ],
+    "relatedOpportunities": [
+      "BiggestDropper"
+    ],
+    "tags": [
+      "ranking",
+      "collapse"
+    ]
+  },
+  {
+    "id": "BiggestClimber",
+    "name": "Biggest Climber",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Best weekly progression.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "weeklyRankGainMax": true
+    },
+    "banterAngles": [
+      "momentum"
+    ],
+    "relatedOpportunities": [
+      "ComebackSeason"
+    ],
+    "tags": [
+      "ranking",
+      "weekly"
+    ]
+  },
+  {
+    "id": "BiggestDropper",
+    "name": "Biggest Dropper",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Worst weekly regression.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "weeklyRankLossMax": true
+    },
+    "banterAngles": [
+      "failure"
+    ],
+    "relatedOpportunities": [
+      "FreeFall"
+    ],
+    "tags": [
+      "ranking",
+      "weekly"
+    ]
+  },
+  {
+    "id": "PodiumGuardian",
+    "name": "Podium Guardian",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "Long podium presence.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "weeksOnPodium": 4
+    },
+    "banterAngles": [
+      "consistency"
+    ],
+    "relatedOpportunities": [
+      "EnteredTop3"
+    ],
+    "tags": [
+      "ranking",
+      "podium"
+    ]
+  },
+  {
+    "id": "OnePointBehind",
+    "name": "One Point Behind",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "Only one point separates rivals.",
+    "requiredData": [
+      "standings"
+    ],
+    "trigger": {
+      "gapExact": 1
+    },
+    "banterAngles": [
+      "pressure",
+      "chase"
+    ],
+    "relatedOpportunities": [
+      "PhotoFinish"
+    ],
+    "tags": [
+      "ranking",
+      "close"
+    ]
+  }
 ]

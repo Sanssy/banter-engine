@@ -5,84 +5,104 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
 )
 
-func TestLoadOpportunityCatalogRegistersEverySupportedOpportunity(t *testing.T) {
-	definitions, err := LoadOpportunityCatalog(filepath.Join("..", "..", "resources", "opportunities.json"))
+func TestLoadCatalogLoadsDefinitiveCatalog(t *testing.T) {
+	opportunityCatalog, err := LoadCatalog(filepath.Join("..", "..", "resources", "opportunities.json"))
 	if err != nil {
-		t.Fatalf("LoadOpportunityCatalog() error = %v", err)
+		t.Fatalf("LoadCatalog() error = %v", err)
 	}
-	expected := []string{
-		opportunities.RankingOvertake,
-		opportunities.EnteredTop3,
-		opportunities.ExitedTop3,
-		opportunities.LeaderUnderPressure,
-		opportunities.LastPlaceLocked,
-		opportunities.ComebackSeason,
-		opportunities.FreeFall,
-		opportunities.RunawayLeader,
-		opportunities.PodiumFight,
-		opportunities.HugeUpset,
-		opportunities.EveryoneWasWrong,
-		opportunities.TheChosenOne,
-		opportunities.AgainstTheCrowd,
-		opportunities.CrowdFavorite,
-		opportunities.CrowdTrap,
-		opportunities.PopularMistake,
-		opportunities.PredictionMassacre,
-		opportunities.HotStreak,
-		opportunities.ColdStreak,
-		opportunities.MatchStarted,
-		opportunities.MatchEnded,
-		opportunities.ScoreChanged,
-		opportunities.ImportantMatchEvent,
-		opportunities.GoalSwing,
-		opportunities.MatchTurnaround,
-		opportunities.EqualizerChaos,
-		opportunities.BiggestWinner,
-		opportunities.BiggestLoser,
-		opportunities.PointExplosion,
-		opportunities.NinetiethMinuteHeartbreak,
-		opportunities.AddedTimeDisaster,
-		opportunities.LastMinuteHero,
-		opportunities.VARVictim,
-		opportunities.RedCardDisaster,
-		opportunities.Nemesis,
-		opportunities.Revenge,
-		opportunities.Dominance,
+	if opportunityCatalog.Len() != 100 {
+		t.Fatalf("catalog contains %d definitions, want 100", opportunityCatalog.Len())
 	}
-	if len(definitions) != len(expected) {
-		t.Fatalf("catalog contains %d definitions, want %d", len(definitions), len(expected))
-	}
-	for _, id := range expected {
-		definition, found := FindOpportunity(definitions, id)
-		if !found || definition.ID != id {
-			t.Fatalf("opportunity %q is missing from catalog", id)
+	for _, category := range []string{"Ranking", "Predictions", "Crowd", "MatchEvents", "Narratives"} {
+		if definitions := opportunityCatalog.FindByCategory(category); len(definitions) != 20 {
+			t.Fatalf("FindByCategory(%q) returned %d definitions, want 20", category, len(definitions))
 		}
 	}
 }
 
-func TestLoadOpportunityCatalogRejectsDuplicates(t *testing.T) {
+func TestCatalogQueries(t *testing.T) {
+	opportunityCatalog := loadFixture(t, validCatalog)
+
+	definition, found := opportunityCatalog.FindByID("RankingOvertake")
+	if !found || definition.Name != "Ranking Overtake" {
+		t.Fatalf("FindByID() = %+v, %v", definition, found)
+	}
+	if definitions := opportunityCatalog.FindByCategory("Ranking"); len(definitions) != 2 {
+		t.Fatalf("FindByCategory() returned %d definitions", len(definitions))
+	}
+	related := opportunityCatalog.FindRelated("RankingOvertake")
+	if len(related) != 1 || related[0].ID != "DoubleOvertake" {
+		t.Fatalf("FindRelated() = %+v", related)
+	}
+}
+
+func TestLoadCatalogRejectsInvalidDefinition(t *testing.T) {
+	invalid := strings.Replace(validCatalog, `"severity": 2`, `"severity": 6`, 1)
+	path := writeCatalog(t, invalid)
+	if _, err := LoadCatalog(path); err == nil || !strings.Contains(err.Error(), "severity") {
+		t.Fatalf("LoadCatalog() error = %v, want severity error", err)
+	}
+}
+
+func TestLoadCatalogRejectsDuplicateIDs(t *testing.T) {
+	duplicate := strings.Replace(validCatalog, `"id": "DoubleOvertake"`, `"id": "RankingOvertake"`, 1)
+	path := writeCatalog(t, duplicate)
+	if _, err := LoadCatalog(path); err == nil || !strings.Contains(err.Error(), "duplicate") {
+		t.Fatalf("LoadCatalog() error = %v, want duplicate error", err)
+	}
+}
+
+func TestLoadCatalogRejectsMissingFields(t *testing.T) {
+	missing := strings.Replace(validCatalog, `"tags": ["ranking"]`, `"tags": []`, 1)
+	path := writeCatalog(t, missing)
+	if _, err := LoadCatalog(path); err == nil || !strings.Contains(err.Error(), "tags") {
+		t.Fatalf("LoadCatalog() error = %v, want missing tags error", err)
+	}
+}
+
+func loadFixture(t *testing.T, data string) *Catalog {
+	t.Helper()
+	opportunityCatalog, err := LoadCatalog(writeCatalog(t, data))
+	if err != nil {
+		t.Fatalf("LoadCatalog() error = %v", err)
+	}
+	return opportunityCatalog
+}
+
+func writeCatalog(t *testing.T, data string) string {
+	t.Helper()
 	path := filepath.Join(t.TempDir(), "opportunities.json")
-	data := `[
-		{"id":"Duplicate","category":"Test","severity":1,"description":"One","tags":[]},
-		{"id":"Duplicate","category":"Test","severity":1,"description":"Two","tags":[]}
-	]`
 	if err := os.WriteFile(path, []byte(data), 0o600); err != nil {
 		t.Fatalf("write catalog: %v", err)
 	}
-
-	if _, err := LoadOpportunityCatalog(path); err == nil || !strings.Contains(err.Error(), "duplicate") {
-		t.Fatalf("LoadOpportunityCatalog() error = %v, want duplicate error", err)
-	}
+	return path
 }
 
-func TestValidateOpportunityRejectsUnknownType(t *testing.T) {
-	definitions := []OpportunityDefinition{{ID: opportunities.RankingOvertake}}
-	_, err := ValidateOpportunity(definitions, opportunities.Opportunity{Type: "Unknown"})
-	if err == nil || !strings.Contains(err.Error(), "unknown opportunity") {
-		t.Fatalf("ValidateOpportunity() error = %v", err)
-	}
-}
+const validCatalog = `[
+  {
+    "id": "RankingOvertake",
+    "name": "Ranking Overtake",
+    "category": "Ranking",
+    "severity": 2,
+    "description": "A player overtakes another player.",
+    "requiredData": ["standings"],
+    "trigger": {"rankImprovement": 1},
+    "banterAngles": ["superiority"],
+    "relatedOpportunities": ["DoubleOvertake"],
+    "tags": ["ranking"]
+  },
+  {
+    "id": "DoubleOvertake",
+    "name": "Double Overtake",
+    "category": "Ranking",
+    "severity": 3,
+    "description": "A player overtakes two players.",
+    "requiredData": ["standings"],
+    "trigger": {"rankImprovement": 2},
+    "banterAngles": ["momentum"],
+    "relatedOpportunities": [],
+    "tags": ["ranking"]
+  }
+]`

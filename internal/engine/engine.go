@@ -24,16 +24,16 @@ import (
 const opportunityCatalogPath = "resources/opportunities.json"
 
 type Engine struct {
-	config      config.Config
-	mpp         *mpp.Client
-	discord     *discord.Client
-	definitions []catalog.OpportunityDefinition
-	logger      *logging.Logger
-	output      io.Writer
+	config  config.Config
+	mpp     *mpp.Client
+	discord *discord.Client
+	catalog *catalog.Catalog
+	logger  *logging.Logger
+	output  io.Writer
 }
 
 func New(cfg config.Config, output io.Writer) (*Engine, error) {
-	definitions, err := catalog.LoadOpportunityCatalog(opportunityCatalogPath)
+	opportunityCatalog, err := catalog.LoadCatalog(opportunityCatalogPath)
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +43,12 @@ func New(cfg config.Config, output io.Writer) (*Engine, error) {
 		discordClient = discord.NewClient(cfg.DiscordWebhookURL)
 	}
 	return &Engine{
-		config:      cfg,
-		mpp:         mpp.NewClient(cfg.MPPToken),
-		discord:     discordClient,
-		definitions: definitions,
-		logger:      logging.New(output, "engine"),
-		output:      output,
+		config:  cfg,
+		mpp:     mpp.NewClient(cfg.MPPToken),
+		discord: discordClient,
+		catalog: opportunityCatalog,
+		logger:  logging.New(output, "engine"),
+		output:  output,
 	}, nil
 }
 
@@ -154,9 +154,9 @@ func (e *Engine) runOnce(ctx context.Context) error {
 	banterContext := contextbuilder.Build(standings, allForecasts, matches, detected)
 	generator := banter.NewGenerator(nil)
 	for _, opportunity := range detected {
-		definition, err := catalog.ValidateOpportunity(e.definitions, opportunity)
-		if err != nil {
-			return err
+		definition, found := e.catalog.FindByID(opportunity.Type)
+		if !found {
+			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
 		}
 		message := generator.GenerateWithDefinition(ctx, opportunity, definition, banterContext)
 		if err := e.publish(message); err != nil {
