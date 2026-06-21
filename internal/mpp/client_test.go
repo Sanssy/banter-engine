@@ -123,6 +123,49 @@ func TestGetForecasts(t *testing.T) {
 	}
 }
 
+func TestGetMatchEvents(t *testing.T) {
+	client := NewClient("test-token")
+	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		if req.URL.Path != "/championship-match/match-1" {
+			t.Fatalf("request path = %q, want %q", req.URL.Path, "/championship-match/match-1")
+		}
+		body := `{
+			"eventsTimeline": [{
+				"id": "event-1",
+				"eventType": "goal",
+				"time": "42'",
+				"side": "home",
+				"playerId": "player-1",
+				"score": {"home": 1, "away": 0}
+			}]
+		}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Body:       io.NopCloser(strings.NewReader(body)),
+			Header:     make(http.Header),
+		}, nil
+	})
+
+	want := []matches.Event{
+		{
+			ID:       "event-1",
+			Type:     "goal",
+			Time:     "42'",
+			Side:     "home",
+			PlayerID: "player-1",
+			Score:    matches.Score{Home: 1},
+		},
+	}
+	got, err := client.GetMatchEvents("match-1")
+	if err != nil {
+		t.Fatalf("GetMatchEvents() error = %v", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetMatchEvents() = %#v, want %#v", got, want)
+	}
+}
+
 type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {

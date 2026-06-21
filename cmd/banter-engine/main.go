@@ -16,6 +16,7 @@ import (
 
 const challengeID = "mpp_challenge_UDKDDH27"
 const snapshotPath = "data/standings.json"
+const matchesSnapshotPath = "data/matches.json"
 const runInterval = 5 * time.Minute
 
 func main() {
@@ -46,6 +47,10 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	if err != nil {
 		return err
 	}
+	previousMatches, err := snapshot.LoadMatches(matchesSnapshotPath)
+	if err != nil {
+		return err
+	}
 
 	standings, err := client.GetStandings(challengeID)
 	if err != nil {
@@ -60,8 +65,29 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	if err != nil {
 		return err
 	}
+	previousMatchStatus := make(map[string]string, len(previousMatches))
+	for _, match := range previousMatches {
+		previousMatchStatus[match.MatchID] = match.Status
+	}
+	for i := range matches {
+		isLive := matches[i].Status != "" && matches[i].Status != "preMatch" && matches[i].Status != "fullTime"
+		justEnded := matches[i].Status == "fullTime" && previousMatchStatus[matches[i].MatchID] != "fullTime"
+		if !isLive && !justEnded {
+			continue
+		}
+		events, err := client.GetMatchEvents(matches[i].MatchID)
+		if err != nil {
+			return err
+		}
+		matches[i].Events = events
+	}
 	var forecastHistory []forecasts.Forecast
 	var messages []string
+	for _, opportunity := range opportunities.DetectLiveUpdates(previousMatches, matches) {
+		message := banter.Generate(opportunity)
+		fmt.Println(message)
+		messages = append(messages, message)
+	}
 	for _, match := range matches {
 		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
 
@@ -100,6 +126,9 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	}
 
 	if err := snapshot.SaveStandings(snapshotPath, standings); err != nil {
+		return err
+	}
+	if err := snapshot.SaveMatches(matchesSnapshotPath, matches); err != nil {
 		return err
 	}
 	return nil

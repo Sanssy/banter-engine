@@ -35,6 +35,14 @@ func Generate(op opportunities.Opportunity) string {
 		return fmt.Sprintf("🔥 %s enchaîne %s pronostics réussis.", op.Actor, op.Target)
 	case opportunities.ColdStreak:
 		return fmt.Sprintf("🥶 %s reste sur %s échecs consécutifs.", op.Actor, op.Target)
+	case opportunities.MatchStarted:
+		return fmt.Sprintf("⚽ Coup d'envoi pour %s.", op.Actor)
+	case opportunities.MatchEnded:
+		return fmt.Sprintf("🏁 Fin du match %s.", op.Actor)
+	case opportunities.ScoreChanged:
+		return fmt.Sprintf("⚽ %s : le score passe à %s.", op.Actor, op.Target)
+	case opportunities.ImportantMatchEvent:
+		return fmt.Sprintf("🚨 %s : %s.", op.Actor, op.Target)
 	default:
 		return fmt.Sprintf("%s: %s -> %s", op.Type, op.Actor, op.Target)
 	}

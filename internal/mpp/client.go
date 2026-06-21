@@ -135,6 +135,30 @@ func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]foreca
 	return result, nil
 }
 
+func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
+	path := "/championship-match/" + url.PathEscape(matchID)
+	var detail matchDetailDTO
+	if err := c.get(path, nil, &detail); err != nil {
+		return nil, fmt.Errorf("fetch match events: %w", err)
+	}
+
+	events := make([]matches.Event, 0, len(detail.EventsTimeline))
+	for _, event := range detail.EventsTimeline {
+		events = append(events, matches.Event{
+			ID:       event.ID,
+			Type:     event.Type,
+			Time:     event.Time,
+			Side:     event.Side,
+			PlayerID: event.PlayerID,
+			Score: matches.Score{
+				Home: event.Score.Home,
+				Away: event.Score.Away,
+			},
+		})
+	}
+	return events, nil
+}
+
 func (c *Client) get(path string, query url.Values, target any) error {
 	endpoint, err := url.Parse(baseURL + path)
 	if err != nil {
@@ -215,6 +239,20 @@ type forecastDTO struct {
 	Points    struct {
 		Total int `json:"total"`
 	} `json:"points"`
+}
+
+type matchDetailDTO struct {
+	EventsTimeline []struct {
+		ID       string `json:"id"`
+		Type     string `json:"eventType"`
+		Time     string `json:"time"`
+		Side     string `json:"side"`
+		PlayerID string `json:"playerId"`
+		Score    struct {
+			Home int `json:"home"`
+			Away int `json:"away"`
+		} `json:"score"`
+	} `json:"eventsTimeline"`
 }
 
 type clubsResponse struct {

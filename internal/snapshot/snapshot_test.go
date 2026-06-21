@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/model"
 )
 
@@ -25,6 +26,29 @@ func TestSaveAndLoadStandings(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("LoadStandings() = %#v, want %#v", got, want)
+	}
+}
+
+func TestSaveAndLoadMatches(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "data", "matches.json")
+	want := []matches.Match{
+		{
+			MatchID: "match-1",
+			Status:  "firstHalf",
+			Score:   matches.Score{Home: 1},
+			Events:  []matches.Event{{ID: "event-1", Type: "goal"}},
+		},
+	}
+
+	if err := SaveMatches(path, want); err != nil {
+		t.Fatalf("SaveMatches() error = %v", err)
+	}
+	got, err := LoadMatches(path)
+	if err != nil {
+		t.Fatalf("LoadMatches() error = %v", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("LoadMatches() = %#v, want %#v", got, want)
 	}
 }
 

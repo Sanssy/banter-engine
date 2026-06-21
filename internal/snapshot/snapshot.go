@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/model"
 )
 
@@ -42,4 +43,35 @@ func LoadStandings(path string) ([]model.Standing, error) {
 	}
 
 	return standings, nil
+}
+
+func SaveMatches(path string, matches []matches.Match) error {
+	data, err := json.MarshalIndent(matches, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode matches: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create snapshot directory: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		return fmt.Errorf("write matches snapshot: %w", err)
+	}
+	return nil
+}
+
+func LoadMatches(path string) ([]matches.Match, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return []matches.Match{}, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read matches snapshot: %w", err)
+	}
+
+	var result []matches.Match
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, fmt.Errorf("decode matches snapshot: %w", err)
+	}
+	return result, nil
 }

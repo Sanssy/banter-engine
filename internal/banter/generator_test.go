@@ -108,6 +108,34 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "🥶 William reste sur 6 échecs consécutifs.",
 		},
+		{
+			name:        "match started",
+			opportunity: opportunities.Opportunity{Type: opportunities.MatchStarted, Actor: "France - Espagne"},
+			want:        "⚽ Coup d'envoi pour France - Espagne.",
+		},
+		{
+			name:        "match ended",
+			opportunity: opportunities.Opportunity{Type: opportunities.MatchEnded, Actor: "France - Espagne"},
+			want:        "🏁 Fin du match France - Espagne.",
+		},
+		{
+			name: "score changed",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.ScoreChanged,
+				Actor:  "France - Espagne",
+				Target: "1-0",
+			},
+			want: "⚽ France - Espagne : le score passe à 1-0.",
+		},
+		{
+			name: "important match event",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.ImportantMatchEvent,
+				Actor:  "France - Espagne",
+				Target: "goal 42'",
+			},
+			want: "🚨 France - Espagne : goal 42'.",
+		},
 	}
 
 	for _, tt := range tests {

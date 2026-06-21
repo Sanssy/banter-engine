@@ -11,6 +11,7 @@ type Match struct {
 	Status          string
 	Quotations      Quotations
 	PredictionStats PredictionStats
+	Events          []Event
 }
 
 type Score struct {
@@ -28,4 +29,13 @@ type PredictionStats struct {
 	Home float64
 	Draw float64
 	Away float64
+}
+
+type Event struct {
+	ID       string
+	Type     string
+	Time     string
+	Side     string
+	PlayerID string
+	Score    Score
 }
