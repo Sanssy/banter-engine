@@ -62,6 +62,34 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			opportunity: opportunities.Opportunity{Type: opportunities.LastPlaceLocked, Actor: "Julien"},
 			want:        "🔒 Julien conserve solidement la dernière place.",
 		},
+		{
+			name: "huge upset",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.HugeUpset,
+				Actor:  "Espagne",
+				Target: "France",
+			},
+			want: "⚠️ Espagne fait tomber le favori France.",
+		},
+		{
+			name:        "everyone was wrong",
+			opportunity: opportunities.Opportunity{Type: opportunities.EveryoneWasWrong, Actor: "France - Espagne"},
+			want:        "📉 France - Espagne : l'intelligence collective a pris un coup.",
+		},
+		{
+			name: "the chosen one",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.TheChosenOne,
+				Actor:  "Julien",
+				Target: "France - Espagne",
+			},
+			want: "🔮 Julien était le seul à y croire sur France - Espagne.",
+		},
+		{
+			name:        "prediction massacre",
+			opportunity: opportunities.Opportunity{Type: opportunities.PredictionMassacre, Actor: "France - Espagne"},
+			want:        "☠️ Extinction des pronostics détectée sur France - Espagne.",
+		},
 	}
 
 	for _, tt := range tests {

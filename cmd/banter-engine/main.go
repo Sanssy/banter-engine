@@ -49,6 +49,9 @@ func main() {
 		for _, forecast := range forecasts {
 			fmt.Printf("  %s: %d-%d (%d points)\n", forecast.UserID, forecast.Prediction.Home, forecast.Prediction.Away, forecast.Points)
 		}
+		for _, opportunity := range opportunities.DetectSurprises(match, forecasts) {
+			fmt.Println(banter.Generate(opportunity))
+		}
 	}
 
 	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
