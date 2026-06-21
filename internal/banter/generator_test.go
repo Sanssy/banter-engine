@@ -86,6 +86,15 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			want: "🔮 Julien était le seul à y croire sur France - Espagne.",
 		},
 		{
+			name: "against the crowd",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.AgainstTheCrowd,
+				Actor:  "Julien",
+				Target: "France - Espagne",
+			},
+			want: "🎯 Julien a défié la foule et avait raison sur France - Espagne.",
+		},
+		{
 			name:        "prediction massacre",
 			opportunity: opportunities.Opportunity{Type: opportunities.PredictionMassacre, Actor: "France - Espagne"},
 			want:        "☠️ Extinction des pronostics détectée sur France - Espagne.",

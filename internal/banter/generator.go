@@ -29,6 +29,8 @@ func Generate(op opportunities.Opportunity) string {
 		return fmt.Sprintf("📉 %s : l'intelligence collective a pris un coup.", op.Actor)
 	case opportunities.TheChosenOne:
 		return fmt.Sprintf("🔮 %s était le seul à y croire sur %s.", op.Actor, op.Target)
+	case opportunities.AgainstTheCrowd:
+		return fmt.Sprintf("🎯 %s a défié la foule et avait raison sur %s.", op.Actor, op.Target)
 	case opportunities.PredictionMassacre:
 		return fmt.Sprintf("☠️ Extinction des pronostics détectée sur %s.", op.Actor)
 	case opportunities.HotStreak:

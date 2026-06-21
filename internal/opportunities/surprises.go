@@ -1,8 +1,6 @@
 package opportunities
 
 import (
-	"fmt"
-
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
@@ -11,6 +9,7 @@ const (
 	HugeUpset          = "HugeUpset"
 	EveryoneWasWrong   = "EveryoneWasWrong"
 	TheChosenOne       = "TheChosenOne"
+	AgainstTheCrowd    = "AgainstTheCrowd"
 	PredictionMassacre = "PredictionMassacre"
 )
 
@@ -26,10 +25,6 @@ func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Oppo
 	}
 
 	actualOutcome := scoreOutcome(match.Score)
-	matchLabel := fmt.Sprintf("%s - %s", match.HomeTeam, match.AwayTeam)
-	correctShare := outcomeValue(match.PredictionStats, actualOutcome)
-	statsAvailable := hasPredictionStats(match.PredictionStats)
-
 	var detected []Opportunity
 	if favorite, ok := favoriteOutcome(match.Quotations); ok && favorite != actualOutcome {
 		detected = append(detected, Opportunity{
@@ -39,17 +34,7 @@ func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Oppo
 		})
 	}
 	detected = append(detected, DetectMassFailures(match)...)
-	if statsAvailable && correctShare > 0 && correctShare < 0.05 {
-		for _, forecast := range forecasts {
-			if scoreOutcome(forecast.Prediction) == actualOutcome {
-				detected = append(detected, Opportunity{
-					Type:   TheChosenOne,
-					Actor:  forecast.UserID,
-					Target: matchLabel,
-				})
-			}
-		}
-	}
+	detected = append(detected, DetectProphets(match, forecasts)...)
 	return detected
 }
 
