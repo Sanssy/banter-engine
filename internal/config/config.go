@@ -8,9 +8,12 @@ import (
 )
 
 const (
-	defaultChallengeID  = "mpp_challenge_UDKDDH27"
-	defaultSnapshotDir  = "data"
-	defaultPollInterval = 5 * time.Minute
+	defaultChallengeID   = "mpp_challenge_UDKDDH27"
+	defaultSnapshotDir   = "data"
+	defaultPollInterval  = 5 * time.Minute
+	defaultOllamaURL     = "http://localhost:11434"
+	defaultOllamaModel   = "llama3"
+	defaultOllamaTimeout = 10 * time.Second
 )
 
 type Config struct {
@@ -20,6 +23,11 @@ type Config struct {
 	SnapshotDir       string
 	PollInterval      time.Duration
 	DryRun            bool
+
+	OllamaEnabled bool
+	OllamaURL     string
+	OllamaModel   string
+	OllamaTimeout time.Duration
 }
 
 func Load() (Config, error) {
@@ -29,6 +37,9 @@ func Load() (Config, error) {
 		ChallengeID:       envOrDefault("CHALLENGE_ID", defaultChallengeID),
 		SnapshotDir:       envOrDefault("SNAPSHOT_DIR", defaultSnapshotDir),
 		PollInterval:      defaultPollInterval,
+		OllamaURL:         envOrDefault("OLLAMA_URL", defaultOllamaURL),
+		OllamaModel:       envOrDefault("OLLAMA_MODEL", defaultOllamaModel),
+		OllamaTimeout:     defaultOllamaTimeout,
 	}
 
 	if value := os.Getenv("POLL_INTERVAL"); value != "" {
@@ -44,6 +55,20 @@ func Load() (Config, error) {
 			return Config{}, fmt.Errorf("DRY_RUN must be a boolean: %w", err)
 		}
 		cfg.DryRun = dryRun
+	}
+	if value := os.Getenv("OLLAMA_ENABLED"); value != "" {
+		enabled, err := strconv.ParseBool(value)
+		if err != nil {
+			return Config{}, fmt.Errorf("OLLAMA_ENABLED must be a boolean: %w", err)
+		}
+		cfg.OllamaEnabled = enabled
+	}
+	if value := os.Getenv("OLLAMA_TIMEOUT"); value != "" {
+		timeout, err := time.ParseDuration(value)
+		if err != nil || timeout <= 0 {
+			return Config{}, fmt.Errorf("OLLAMA_TIMEOUT must be a positive duration")
+		}
+		cfg.OllamaTimeout = timeout
 	}
 
 	if cfg.MPPToken == "" {

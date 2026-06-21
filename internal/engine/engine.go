@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Sanssy/banter-engine/internal/banter"
 	"github.com/Sanssy/banter-engine/internal/catalog"
 	"github.com/Sanssy/banter-engine/internal/config"
 	"github.com/Sanssy/banter-engine/internal/discord"
@@ -15,6 +14,7 @@ import (
 	"github.com/Sanssy/banter-engine/internal/logging"
 	matchmodel "github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/mpp"
+	"github.com/Sanssy/banter-engine/internal/narrator"
 	"github.com/Sanssy/banter-engine/internal/notify"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
 	"github.com/Sanssy/banter-engine/internal/references"
@@ -25,13 +25,15 @@ import (
 const opportunityCatalogPath = "resources/opportunities.json"
 
 type Engine struct {
-	config   config.Config
-	mpp      *mpp.Client
-	discord  *discord.Client
-	catalog  *catalog.Catalog
-	logger   *logging.Logger
-	output   io.Writer
-	resolver *references.Resolver
+	config        config.Config
+	mpp           *mpp.Client
+	discord       *discord.Client
+	catalog       *catalog.Catalog
+	logger        *logging.Logger
+	output        io.Writer
+	resolver      *references.Resolver
+	narrator      narrator.Narrator
+	digestNarrator narrator.DigestNarrator
 }
 
 func New(cfg config.Config, output io.Writer) (*Engine, error) {
@@ -49,15 +51,30 @@ func New(cfg config.Config, output io.Writer) (*Engine, error) {
 	if !cfg.DryRun {
 		discordClient = discord.NewClient(cfg.DiscordWebhookURL)
 	}
+
+	var liveNarrator narrator.Narrator
+	var digestNar narrator.DigestNarrator
+	if cfg.OllamaEnabled {
+		ollamaNar := narrator.NewOllamaNarrator(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
+		liveNarrator = ollamaNar
+		digestNar = ollamaNar
+	} else {
+		det := narrator.DeterministicNarrator{}
+		liveNarrator = det
+		digestNar = det
+	}
+
 	referenceResolver := references.New(output)
 	return &Engine{
-		config:   cfg,
-		mpp:      mpp.NewClient(cfg.MPPToken, referenceResolver),
-		discord:  discordClient,
-		catalog:  opportunityCatalog,
-		logger:   logging.New(output, "engine"),
-		output:   output,
-		resolver: referenceResolver,
+		config:         cfg,
+		mpp:            mpp.NewClient(cfg.MPPToken, referenceResolver),
+		discord:        discordClient,
+		catalog:        opportunityCatalog,
+		logger:         logging.New(output, "engine"),
+		output:         output,
+		resolver:       referenceResolver,
+		narrator:       liveNarrator,
+		digestNarrator: digestNar,
 	}, nil
 }
 
@@ -191,7 +208,7 @@ func (e *Engine) runOnce() error {
 	} else if notify.IsNightSummaryHour(now) && !sameDay(nightSummaryDate, now) {
 		// Morning digest: send summary of overnight events, then dispatch live events normally.
 		if len(nightBuffer) > 0 {
-			summary := notify.NightSummary(nightBuffer, e.catalog)
+			summary := e.digestNarrator.Summarize(nightBuffer, e.catalog)
 			if summary != "" {
 				if err := e.publish(summary); err != nil {
 					return err
@@ -244,7 +261,7 @@ func (e *Engine) publishLiveDigest(detected []opportunities.Opportunity) error {
 		if !found {
 			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
 		}
-		message := banter.GenerateWithDefinition(opportunity, definition)
+		message := e.narrator.Narrate(opportunity, definition)
 		if err := e.publish(message); err != nil {
 			return err
 		}
