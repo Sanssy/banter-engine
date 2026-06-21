@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/DSanoussy/banter-engine/internal/banter"
+	"github.com/DSanoussy/banter-engine/internal/discord"
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/mpp"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
@@ -19,6 +20,10 @@ func main() {
 	token := os.Getenv("MPP_TOKEN")
 	if token == "" {
 		log.Fatal("MPP_TOKEN environment variable is required")
+	}
+	webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
+	if webhookURL == "" {
+		log.Fatal("DISCORD_WEBHOOK_URL environment variable is required")
 	}
 
 	previousStandings, err := snapshot.LoadStandings(snapshotPath)
@@ -41,6 +46,7 @@ func main() {
 		log.Fatal(err)
 	}
 	var forecastHistory []forecasts.Forecast
+	var messages []string
 	for _, match := range matches {
 		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
 
@@ -55,15 +61,28 @@ func main() {
 			forecastHistory = append(forecastHistory, forecasts...)
 		}
 		for _, opportunity := range opportunities.DetectSurprises(match, forecasts) {
-			fmt.Println(banter.Generate(opportunity))
+			message := banter.Generate(opportunity)
+			fmt.Println(message)
+			messages = append(messages, message)
 		}
 	}
 	for _, opportunity := range opportunities.DetectStreaks(forecastHistory) {
-		fmt.Println(banter.Generate(opportunity))
+		message := banter.Generate(opportunity)
+		fmt.Println(message)
+		messages = append(messages, message)
 	}
 
 	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
-		fmt.Println(banter.Generate(opportunity))
+		message := banter.Generate(opportunity)
+		fmt.Println(message)
+		messages = append(messages, message)
+	}
+
+	discordClient := discord.NewClient(webhookURL)
+	for _, message := range messages {
+		if err := discordClient.Send(message); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if err := snapshot.SaveStandings(snapshotPath, standings); err != nil {
