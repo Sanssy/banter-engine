@@ -26,6 +26,13 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 		if got := req.Header.Get("Authorization"); got != "Bearer test-token" {
 			t.Fatalf("Authorization header = %q, want %q", got, "Bearer test-token")
 		}
+		wantAppContext := ""
+		if req.URL.Path == "/championship-clubs" {
+			wantAppContext = internationalEventAppContext
+		}
+		if got := req.Header.Get("app-context"); got != wantAppContext {
+			t.Fatalf("app-context header for %s = %q, want %q", req.URL.Path, got, wantAppContext)
+		}
 
 		var body string
 		switch req.URL.Path {
@@ -75,8 +82,8 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 			}`
 		case "/championship-clubs":
 			body = `{
-				"mpp_championship_club_367": {"lang": {"fr-FR": {"name": "Canada", "shortName": "CAN"}}},
-				"mpp_championship_club_522": {"shortName": "Qatar"},
+				"mpp_championship_club_367": {"name": {"fr-FR": "Tchéquie"}, "shortName": "CZE"},
+				"mpp_championship_club_522": {"name": {"fr-FR": "Afrique du Sud"}, "shortName": "ZAF"},
 				"mpp_championship_club_152": {"shortName": "AS Saint-Étienne"},
 				"mpp_championship_club_1430": {"shortName": "Guingamp"}
 			}`
@@ -96,8 +103,8 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 		{
 			MatchID:  "world-cup-match",
 			Date:     time.Date(2026, 6, 21, 16, 0, 0, 0, time.UTC),
-			HomeTeam: "Canada",
-			AwayTeam: "Qatar",
+			HomeTeam: "Tchéquie",
+			AwayTeam: "Afrique du Sud",
 			Score:    matches.Score{},
 			Status:   "preMatch",
 			Quotations: matches.Quotations{
@@ -138,8 +145,8 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 		"club reference decoded clubs_count=4",
 		"club reference first_club id=mpp_championship_club_1430 name=Guingamp languages=[]",
 		"requested_match_id=world-cup-match summary_match_id=world-cup-match home_club_id=mpp_championship_club_367 away_club_id=mpp_championship_club_522",
-		"club reference match_id=world-cup-match home_present=true home_name=Canada home_languages=[fr-FR] away_present=true away_name=Qatar away_languages=[]",
-		"match_id=world-cup-match home_team=Canada away_team=Qatar date=2026-06-21T16:00:00Z",
+		"club reference match_id=world-cup-match home_present=true home_name=Tchéquie home_languages=[fr-FR] away_present=true away_name=Afrique du Sud away_languages=[fr-FR]",
+		"match_id=world-cup-match home_team=Tchéquie away_team=Afrique du Sud date=2026-06-21T16:00:00Z",
 	} {
 		if !strings.Contains(logOutput.String(), expected) {
 			t.Errorf("diagnostic log does not contain %q:\n%s", expected, logOutput.String())

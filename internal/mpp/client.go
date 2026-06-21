@@ -20,7 +20,10 @@ import (
 	"github.com/Sanssy/banter-engine/internal/references"
 )
 
-const baseURL = "https://api.mpp.football"
+const (
+	baseURL                      = "https://api.mpp.football"
+	internationalEventAppContext = "internationalEvent"
+)
 
 type Client struct {
 	token      string
@@ -118,7 +121,7 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 
 	var apiClubs clubsResponse
 	c.logMatchRoute(http.MethodGet, "/championship-clubs")
-	clubsData, err := c.getRaw("/championship-clubs")
+	clubsData, err := c.getRaw("/championship-clubs", internationalEventAppContext)
 	if err != nil {
 		return nil, fmt.Errorf("fetch clubs: %w", err)
 	}
@@ -277,7 +280,7 @@ func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]foreca
 func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
 	path := "/championship-match/" + url.PathEscape(matchID)
 	c.logger.Info("match events route=GET url=%s%s", baseURL, path)
-	data, err := c.getRaw(path)
+	data, err := c.getRaw(path, "")
 	if err != nil {
 		return nil, fmt.Errorf("fetch match events: %w", err)
 	}
@@ -309,10 +312,13 @@ func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
 	return events, nil
 }
 
-func (c *Client) getRaw(path string) ([]byte, error) {
+func (c *Client) getRaw(path, appContext string) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, baseURL+path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
+	}
+	if appContext != "" {
+		req.Header.Set("app-context", appContext)
 	}
 	return c.execute(req)
 }
