@@ -33,14 +33,14 @@ func detectProphets(match matches.Match, matchForecasts []forecasts.Forecast) []
 	if len(correct) == 1 {
 		detected = append(detected, Opportunity{
 			Type:   TheChosenOne,
-			Actor:  correct[0].UserID,
+			Actor:  forecastUserName(correct[0]),
 			Target: matchLabel,
 		})
 	}
 	for _, forecast := range correct {
 		detected = append(detected, Opportunity{
 			Type:   AgainstTheCrowd,
-			Actor:  forecast.UserID,
+			Actor:  forecastUserName(forecast),
 			Target: matchLabel,
 		})
 	}

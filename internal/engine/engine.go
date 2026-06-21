@@ -16,6 +16,7 @@ import (
 	matchmodel "github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/mpp"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
+	"github.com/Sanssy/banter-engine/internal/references"
 	"github.com/Sanssy/banter-engine/internal/rivalries"
 	"github.com/Sanssy/banter-engine/internal/snapshot"
 )
@@ -23,12 +24,13 @@ import (
 const opportunityCatalogPath = "resources/opportunities.json"
 
 type Engine struct {
-	config  config.Config
-	mpp     *mpp.Client
-	discord *discord.Client
-	catalog *catalog.Catalog
-	logger  *logging.Logger
-	output  io.Writer
+	config   config.Config
+	mpp      *mpp.Client
+	discord  *discord.Client
+	catalog  *catalog.Catalog
+	logger   *logging.Logger
+	output   io.Writer
+	resolver *references.Resolver
 }
 
 func New(cfg config.Config, output io.Writer) (*Engine, error) {
@@ -46,13 +48,15 @@ func New(cfg config.Config, output io.Writer) (*Engine, error) {
 	if !cfg.DryRun {
 		discordClient = discord.NewClient(cfg.DiscordWebhookURL)
 	}
+	referenceResolver := references.New(output)
 	return &Engine{
-		config:  cfg,
-		mpp:     mpp.NewClient(cfg.MPPToken),
-		discord: discordClient,
-		catalog: opportunityCatalog,
-		logger:  logging.New(output, "engine"),
-		output:  output,
+		config:   cfg,
+		mpp:      mpp.NewClient(cfg.MPPToken, referenceResolver),
+		discord:  discordClient,
+		catalog:  opportunityCatalog,
+		logger:   logging.New(output, "engine"),
+		output:   output,
+		resolver: referenceResolver,
 	}, nil
 }
 
@@ -107,6 +111,7 @@ func (e *Engine) runOnce() error {
 	if err != nil {
 		return err
 	}
+	e.resolver.RegisterUsers(standings)
 	matches, err := e.mpp.GetMatches(e.config.ChallengeID)
 	if err != nil {
 		return err
@@ -161,6 +166,8 @@ func (e *Engine) runOnce() error {
 	detected = append(detected, opportunities.Detect(previousStandings, standings)...)
 
 	for _, opportunity := range detected {
+		opportunity.Actor = e.resolver.Resolve(opportunity.Actor)
+		opportunity.Target = e.resolver.Resolve(opportunity.Target)
 		definition, found := e.catalog.FindByID(opportunity.Type)
 		if !found {
 			return fmt.Errorf("unknown opportunity %q", opportunity.Type)

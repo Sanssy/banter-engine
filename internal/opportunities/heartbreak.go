@@ -17,19 +17,19 @@ func DetectHeartbreaks(previous, current matches.Match, forecasts []forecasts.Fo
 			case isLateGoal(event) && forecast.Prediction == previous.Score && forecast.Prediction != current.Score:
 				detected = append(detected, Opportunity{
 					Type:   NinetiethMinuteHeartbreak,
-					Actor:  forecast.UserID,
+					Actor:  forecastUserName(forecast),
 					Target: matchLabel,
 				})
 			case isVAR(event) && forecast.Prediction == previous.Score && forecast.Prediction != current.Score:
 				detected = append(detected, Opportunity{
 					Type:   VARVictim,
-					Actor:  forecast.UserID,
+					Actor:  forecastUserName(forecast),
 					Target: matchLabel,
 				})
 			case isRedCard(event) && predictedWinner(forecast.Prediction) == event.Side:
 				detected = append(detected, Opportunity{
 					Type:   RedCardDisaster,
-					Actor:  forecast.UserID,
+					Actor:  forecastUserName(forecast),
 					Target: matchLabel,
 				})
 			}
@@ -67,13 +67,13 @@ func DetectLatePointImpacts(
 		case impact.Delta < 0 && hasAddedTimeEvent:
 			detected = append(detected, Opportunity{
 				Type:   AddedTimeDisaster,
-				Actor:  impact.UserID,
+				Actor:  impact.UserName,
 				Target: matchLabel,
 			})
 		case impact.Delta > 0:
 			detected = append(detected, Opportunity{
 				Type:   LastMinuteHero,
-				Actor:  impact.UserID,
+				Actor:  impact.UserName,
 				Target: matchLabel,
 			})
 		}

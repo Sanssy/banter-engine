@@ -32,7 +32,7 @@ func DetectStreaks(history []forecasts.Forecast) []Opportunity {
 		if length >= minimumStreakLength {
 			detected = append(detected, Opportunity{
 				Type:   streakType,
-				Actor:  userID,
+				Actor:  forecastUserName(forecasts[len(forecasts)-1]),
 				Target: strconv.Itoa(length),
 			})
 		}

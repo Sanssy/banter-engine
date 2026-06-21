@@ -3,9 +3,11 @@ package opportunities_test
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Sanssy/banter-engine/internal/banter"
 	"github.com/Sanssy/banter-engine/internal/catalog"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
 	"github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
@@ -33,5 +35,30 @@ func TestGeneratedOpportunityUsesResolvedClubName(t *testing.T) {
 	}
 	if strings.Contains(message, "mpp_championship_club_") {
 		t.Fatalf("generated message %q contains technical club ID", message)
+	}
+}
+
+func TestGeneratedOpportunityUsesResolvedUserName(t *testing.T) {
+	start := time.Date(2026, time.June, 1, 0, 0, 0, 0, time.UTC)
+	history := make([]forecasts.Forecast, 5)
+	for i := range history {
+		history[i] = forecasts.Forecast{
+			UserID:    "user_11291094",
+			UserName:  "LeDaveCoinCoin",
+			MatchDate: start.Add(time.Duration(i) * time.Hour),
+		}
+	}
+
+	detected := opportunities.DetectStreaks(history)
+	if len(detected) != 1 {
+		t.Fatalf("DetectStreaks() returned %d opportunities, want 1", len(detected))
+	}
+
+	message := banter.GenerateWithDefinition(detected[0], catalog.OpportunityDefinition{ID: detected[0].Type})
+	if !strings.Contains(message, "LeDaveCoinCoin") {
+		t.Fatalf("generated message %q does not contain resolved user name", message)
+	}
+	if strings.Contains(message, "user_") {
+		t.Fatalf("generated message %q contains technical user ID", message)
 	}
 }

@@ -8,6 +8,7 @@ import (
 
 type Forecast struct {
 	UserID     string
+	UserName   string
 	MatchID    string
 	MatchDate  time.Time
 	Prediction matches.Score

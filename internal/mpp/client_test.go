@@ -13,10 +13,11 @@ import (
 	"github.com/Sanssy/banter-engine/internal/forecasts"
 	"github.com/Sanssy/banter-engine/internal/logging"
 	"github.com/Sanssy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/references"
 )
 
 func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
-	client := NewClient("test-token")
+	client := NewClient("test-token", references.New(io.Discard))
 	var logOutput bytes.Buffer
 	client.logger = logging.New(&logOutput, "mpp")
 	var requestedPaths []string
@@ -74,7 +75,7 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 			}`
 		case "/championship-clubs":
 			body = `{
-				"mpp_championship_club_367": {"name": {"fr-FR": "Canada"}},
+				"mpp_championship_club_367": {"lang": {"fr-FR": {"name": "Canada", "shortName": "CAN"}}},
 				"mpp_championship_club_522": {"shortName": "Qatar"},
 				"mpp_championship_club_152": {"shortName": "AS Saint-Étienne"},
 				"mpp_championship_club_1430": {"shortName": "Guingamp"}
@@ -149,8 +150,8 @@ func TestClubsResponseAcceptsWrappedReference(t *testing.T) {
 	if err := json.Unmarshal(data, &response); err != nil {
 		t.Fatalf("Unmarshal() error = %v", err)
 	}
-	if got := clubName(response.ChampionshipClubs["club-1"], "club-1"); got != "France" {
-		t.Fatalf("clubName() = %q, want France", got)
+	if got := clubDisplayName(response.ChampionshipClubs["club-1"]); got != "France" {
+		t.Fatalf("clubDisplayName() = %q, want France", got)
 	}
 }
 
@@ -171,7 +172,9 @@ func TestSelectCurrentGameWeekUsesDateWhenCurrentIsOmitted(t *testing.T) {
 }
 
 func TestGetForecasts(t *testing.T) {
-	client := NewClient("test-token")
+	resolver := references.New(io.Discard)
+	resolver.RegisterUser("user-1", "LeDaveCoinCoin")
+	client := NewClient("test-token", resolver)
 	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		wantPath := "/user-match-forecasts/contest/challenge-1/match/match-1"
 		if req.URL.Path != wantPath {
@@ -197,6 +200,7 @@ func TestGetForecasts(t *testing.T) {
 	want := []forecasts.Forecast{
 		{
 			UserID:     "user-1",
+			UserName:   "LeDaveCoinCoin",
 			MatchID:    "match-1",
 			Prediction: matches.Score{Home: 2, Away: 1},
 			Result:     matches.Score{Home: 2, Away: 1},
@@ -214,7 +218,7 @@ func TestGetForecasts(t *testing.T) {
 }
 
 func TestGetMatchEvents(t *testing.T) {
-	client := NewClient("test-token")
+	client := NewClient("test-token", references.New(io.Discard))
 	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		if req.URL.Path != "/championship-match/match-1" {
 			t.Fatalf("request path = %q, want %q", req.URL.Path, "/championship-match/match-1")
@@ -259,7 +263,7 @@ func TestGetMatchEvents(t *testing.T) {
 }
 
 func TestGetMatchEventsDecodesStringScore(t *testing.T) {
-	client := NewClient("test-token")
+	client := NewClient("test-token", references.New(io.Discard))
 	var logOutput bytes.Buffer
 	client.logger = logging.New(&logOutput, "mpp")
 	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {

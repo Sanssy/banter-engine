@@ -17,6 +17,7 @@ import (
 	"github.com/Sanssy/banter-engine/internal/logging"
 	"github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/references"
 )
 
 const baseURL = "https://api.mpp.football"
@@ -25,15 +26,17 @@ type Client struct {
 	token      string
 	httpClient *http.Client
 	logger     *logging.Logger
+	resolver   *references.Resolver
 }
 
-func NewClient(token string) *Client {
+func NewClient(token string, resolver *references.Resolver) *Client {
 	return &Client{
 		token: token,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-		logger: logging.New(os.Stderr, "mpp"),
+		logger:   logging.New(os.Stderr, "mpp"),
+		resolver: resolver,
 	}
 }
 
@@ -124,6 +127,9 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 		return nil, fmt.Errorf("decode clubs: %w", err)
 	}
 	c.logger.Info("club reference decoded clubs_count=%d", len(apiClubs.ChampionshipClubs))
+	for id, club := range apiClubs.ChampionshipClubs {
+		c.resolver.RegisterClub(id, clubDisplayName(club))
+	}
 
 	result := make([]matches.Match, 0, len(gameWeek.MatchIDs))
 	for index, id := range gameWeek.MatchIDs {
@@ -147,11 +153,19 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 			matchID = id
 		}
 
+		homeTeam := c.resolver.ClubName(match.Home.ClubID)
+		awayTeam := c.resolver.ClubName(match.Away.ClubID)
+		c.logger.Info(
+			"match_build match_id=%s home_team=%s away_team=%s",
+			matchID,
+			homeTeam,
+			awayTeam,
+		)
 		result = append(result, matches.Match{
 			MatchID:  matchID,
 			Date:     match.Date,
-			HomeTeam: clubName(apiClubs.ChampionshipClubs[match.Home.ClubID], match.Home.ClubID),
-			AwayTeam: clubName(apiClubs.ChampionshipClubs[match.Away.ClubID], match.Away.ClubID),
+			HomeTeam: homeTeam,
+			AwayTeam: awayTeam,
 			Score: matches.Score{
 				Home: match.Home.Score,
 				Away: match.Away.Score,
@@ -219,6 +233,7 @@ func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]foreca
 	for userID, forecast := range apiForecasts {
 		result = append(result, forecasts.Forecast{
 			UserID:    userID,
+			UserName:  c.resolver.UserName(userID),
 			MatchID:   match.MatchID,
 			MatchDate: match.Date,
 			Prediction: matches.Score{
@@ -526,10 +541,20 @@ func (r *clubsResponse) UnmarshalJSON(data []byte) error {
 type clubDTO struct {
 	Name      map[string]string `json:"name"`
 	ShortName string            `json:"shortName"`
+	Lang      map[string]struct {
+		Name      string `json:"name"`
+		ShortName string `json:"shortName"`
+	} `json:"lang"`
 }
 
-func clubName(club clubDTO, fallback string) string {
+func clubDisplayName(club clubDTO) string {
 	for _, locale := range []string{"fr-FR", "fr", "en-GB", "en"} {
+		if name := club.Lang[locale].Name; name != "" {
+			return name
+		}
+		if name := club.Lang[locale].ShortName; name != "" {
+			return name
+		}
 		if name := club.Name[locale]; name != "" {
 			return name
 		}
@@ -537,5 +562,5 @@ func clubName(club clubDTO, fallback string) string {
 	if club.ShortName != "" {
 		return club.ShortName
 	}
-	return fallback
+	return ""
 }

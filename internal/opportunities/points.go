@@ -11,6 +11,7 @@ const pointExplosionThreshold = 5
 
 type pointImpact struct {
 	UserID         string
+	UserName       string
 	MatchID        string
 	PreviousPoints int
 	CurrentPoints  int
@@ -31,6 +32,7 @@ func calculatePointImpacts(previous, current []forecasts.Forecast) []pointImpact
 		}
 		impacts = append(impacts, pointImpact{
 			UserID:         forecast.UserID,
+			UserName:       forecastUserName(forecast),
 			MatchID:        forecast.MatchID,
 			PreviousPoints: old.Points,
 			CurrentPoints:  forecast.Points,
@@ -68,14 +70,14 @@ func DetectPointImpacts(previous, current []forecasts.Forecast) []Opportunity {
 	if biggestWinner != nil {
 		detected = append(detected, Opportunity{
 			Type:   BiggestWinner,
-			Actor:  biggestWinner.UserID,
+			Actor:  biggestWinner.UserName,
 			Target: signedPoints(biggestWinner.Delta),
 		})
 	}
 	if biggestLoser != nil {
 		detected = append(detected, Opportunity{
 			Type:   BiggestLoser,
-			Actor:  biggestLoser.UserID,
+			Actor:  biggestLoser.UserName,
 			Target: signedPoints(biggestLoser.Delta),
 		})
 	}
@@ -83,7 +85,7 @@ func DetectPointImpacts(previous, current []forecasts.Forecast) []Opportunity {
 		if impact.Delta >= pointExplosionThreshold {
 			detected = append(detected, Opportunity{
 				Type:   PointExplosion,
-				Actor:  impact.UserID,
+				Actor:  impact.UserName,
 				Target: signedPoints(impact.Delta),
 			})
 		}
