@@ -34,6 +34,7 @@ type PredictionStats struct {
 type Event struct {
 	ID       string
 	Type     string
+	Detail   string
 	Time     string
 	Side     string
 	PlayerID string

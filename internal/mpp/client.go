@@ -147,6 +147,7 @@ func (c *Client) GetMatchEvents(matchID string) ([]matches.Event, error) {
 		events = append(events, matches.Event{
 			ID:       event.ID,
 			Type:     event.Type,
+			Detail:   eventDetail(event),
 			Time:     event.Time,
 			Side:     event.Side,
 			PlayerID: event.PlayerID,
@@ -242,17 +243,28 @@ type forecastDTO struct {
 }
 
 type matchDetailDTO struct {
-	EventsTimeline []struct {
-		ID       string `json:"id"`
-		Type     string `json:"eventType"`
-		Time     string `json:"time"`
-		Side     string `json:"side"`
-		PlayerID string `json:"playerId"`
-		Score    struct {
-			Home int `json:"home"`
-			Away int `json:"away"`
-		} `json:"score"`
-	} `json:"eventsTimeline"`
+	EventsTimeline []matchEventDTO `json:"eventsTimeline"`
+}
+
+type matchEventDTO struct {
+	ID          string `json:"eventId"`
+	Type        string `json:"eventType"`
+	GoalType    string `json:"goalType"`
+	BookingType string `json:"bookingType"`
+	Time        string `json:"time"`
+	Side        string `json:"side"`
+	PlayerID    string `json:"playerId"`
+	Score       struct {
+		Home int `json:"home"`
+		Away int `json:"away"`
+	} `json:"score"`
+}
+
+func eventDetail(event matchEventDTO) string {
+	if event.GoalType != "" {
+		return event.GoalType
+	}
+	return event.BookingType
 }
 
 type clubsResponse struct {

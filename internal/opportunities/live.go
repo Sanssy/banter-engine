@@ -81,8 +81,9 @@ func eventKey(event matches.Event) string {
 		return event.ID
 	}
 	return fmt.Sprintf(
-		"%s|%s|%s|%s|%d-%d",
+		"%s|%s|%s|%s|%s|%d-%d",
 		event.Type,
+		event.Detail,
 		event.Time,
 		event.Side,
 		event.PlayerID,

@@ -131,8 +131,9 @@ func TestGetMatchEvents(t *testing.T) {
 		}
 		body := `{
 			"eventsTimeline": [{
-				"id": "event-1",
+				"eventId": "event-1",
 				"eventType": "goal",
+				"goalType": "penalty",
 				"time": "42'",
 				"side": "home",
 				"playerId": "player-1",
@@ -151,6 +152,7 @@ func TestGetMatchEvents(t *testing.T) {
 		{
 			ID:       "event-1",
 			Type:     "goal",
+			Detail:   "penalty",
 			Time:     "42'",
 			Side:     "home",
 			PlayerID: "player-1",

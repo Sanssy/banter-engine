@@ -43,6 +43,12 @@ func Generate(op opportunities.Opportunity) string {
 		return fmt.Sprintf("⚽ %s : le score passe à %s.", op.Actor, op.Target)
 	case opportunities.ImportantMatchEvent:
 		return fmt.Sprintf("🚨 %s : %s.", op.Actor, op.Target)
+	case opportunities.NinetiethMinuteHeartbreak:
+		return fmt.Sprintf("💔 %s perd son prono parfait dans les derniers instants de %s.", op.Actor, op.Target)
+	case opportunities.VARVictim:
+		return fmt.Sprintf("📺 La VAR brise le pronostic de %s sur %s.", op.Actor, op.Target)
+	case opportunities.RedCardDisaster:
+		return fmt.Sprintf("🟥 Le rouge met le pronostic de %s en danger sur %s.", op.Actor, op.Target)
 	default:
 		return fmt.Sprintf("%s: %s -> %s", op.Type, op.Actor, op.Target)
 	}

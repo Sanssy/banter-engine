@@ -136,6 +136,33 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "🚨 France - Espagne : goal 42'.",
 		},
+		{
+			name: "ninetieth minute heartbreak",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.NinetiethMinuteHeartbreak,
+				Actor:  "Julien",
+				Target: "France - Espagne",
+			},
+			want: "💔 Julien perd son prono parfait dans les derniers instants de France - Espagne.",
+		},
+		{
+			name: "var victim",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.VARVictim,
+				Actor:  "Julien",
+				Target: "France - Espagne",
+			},
+			want: "📺 La VAR brise le pronostic de Julien sur France - Espagne.",
+		},
+		{
+			name: "red card disaster",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.RedCardDisaster,
+				Actor:  "Julien",
+				Target: "France - Espagne",
+			},
+			want: "🟥 Le rouge met le pronostic de Julien en danger sur France - Espagne.",
+		},
 	}
 
 	for _, tt := range tests {

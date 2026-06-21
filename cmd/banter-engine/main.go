@@ -9,6 +9,7 @@ import (
 	"github.com/DSanoussy/banter-engine/internal/banter"
 	"github.com/DSanoussy/banter-engine/internal/discord"
 	"github.com/DSanoussy/banter-engine/internal/forecasts"
+	matchmodel "github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/mpp"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 	"github.com/DSanoussy/banter-engine/internal/snapshot"
@@ -65,13 +66,14 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	if err != nil {
 		return err
 	}
-	previousMatchStatus := make(map[string]string, len(previousMatches))
+	previousMatchesByID := make(map[string]matchmodel.Match, len(previousMatches))
 	for _, match := range previousMatches {
-		previousMatchStatus[match.MatchID] = match.Status
+		previousMatchesByID[match.MatchID] = match
 	}
 	for i := range matches {
 		isLive := matches[i].Status != "" && matches[i].Status != "preMatch" && matches[i].Status != "fullTime"
-		justEnded := matches[i].Status == "fullTime" && previousMatchStatus[matches[i].MatchID] != "fullTime"
+		previousMatch, existed := previousMatchesByID[matches[i].MatchID]
+		justEnded := existed && matches[i].Status == "fullTime" && previousMatch.Status != "fullTime"
 		if !isLive && !justEnded {
 			continue
 		}
@@ -105,6 +107,13 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 			message := banter.Generate(opportunity)
 			fmt.Println(message)
 			messages = append(messages, message)
+		}
+		if previousMatch, ok := previousMatchesByID[match.MatchID]; ok {
+			for _, opportunity := range opportunities.DetectHeartbreaks(previousMatch, match, forecasts) {
+				message := banter.Generate(opportunity)
+				fmt.Println(message)
+				messages = append(messages, message)
+			}
 		}
 	}
 	for _, opportunity := range opportunities.DetectStreaks(forecastHistory) {
