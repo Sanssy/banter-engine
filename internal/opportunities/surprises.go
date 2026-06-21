@@ -28,8 +28,7 @@ func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Oppo
 	actualOutcome := scoreOutcome(match.Score)
 	matchLabel := fmt.Sprintf("%s - %s", match.HomeTeam, match.AwayTeam)
 	correctShare := outcomeValue(match.PredictionStats, actualOutcome)
-	mostPredictedOutcome, mostPredictedShare := mostPredicted(match.PredictionStats)
-	hasPredictionStats := match.PredictionStats.Home+match.PredictionStats.Draw+match.PredictionStats.Away > 0
+	statsAvailable := hasPredictionStats(match.PredictionStats)
 
 	var detected []Opportunity
 	if favorite, ok := favoriteOutcome(match.Quotations); ok && favorite != actualOutcome {
@@ -39,10 +38,8 @@ func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Oppo
 			Target: outcomeName(match, favorite),
 		})
 	}
-	if hasPredictionStats && mostPredictedShare > 0.80 && mostPredictedOutcome != actualOutcome {
-		detected = append(detected, Opportunity{Type: EveryoneWasWrong, Actor: matchLabel})
-	}
-	if hasPredictionStats && correctShare > 0 && correctShare < 0.05 {
+	detected = append(detected, DetectMassFailures(match)...)
+	if statsAvailable && correctShare > 0 && correctShare < 0.05 {
 		for _, forecast := range forecasts {
 			if scoreOutcome(forecast.Prediction) == actualOutcome {
 				detected = append(detected, Opportunity{
@@ -53,10 +50,6 @@ func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Oppo
 			}
 		}
 	}
-	if hasPredictionStats && 1-correctShare > 0.50 {
-		detected = append(detected, Opportunity{Type: PredictionMassacre, Actor: matchLabel})
-	}
-
 	return detected
 }
 

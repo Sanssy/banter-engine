@@ -33,8 +33,8 @@ func TestDetectSurprises(t *testing.T) {
 	want := []Opportunity{
 		{Type: HugeUpset, Actor: "Espagne", Target: "France"},
 		{Type: EveryoneWasWrong, Actor: "France - Espagne"},
-		{Type: TheChosenOne, Actor: "user-1", Target: "France - Espagne"},
 		{Type: PredictionMassacre, Actor: "France - Espagne"},
+		{Type: TheChosenOne, Actor: "user-1", Target: "France - Espagne"},
 	}
 
 	got := DetectSurprises(match, matchForecasts)
