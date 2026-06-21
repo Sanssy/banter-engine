@@ -35,6 +35,14 @@ func main() {
 		fmt.Printf("%d. %-12s %d\n", standing.Rank, standing.Name, standing.Points)
 	}
 
+	matches, err := client.GetMatches()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, match := range matches {
+		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
+	}
+
 	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
 		fmt.Println(banter.Generate(opportunity))
 	}

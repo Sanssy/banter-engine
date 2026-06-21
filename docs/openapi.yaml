@@ -1,0 +1,1260 @@
+openapi: 3.1.0
+info:
+  title: MPP Football API
+  description: API for the MPP Football prediction game (mpp.football).
+  version: "1.0.0"
+servers:
+  - url: https://api.mpp.football
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AppContext:
+      name: app-context
+      in: header
+      required: false
+      schema:
+        type: string
+        example: internationalEvent
+    Baggage:
+      name: baggage
+      in: header
+      required: false
+      description: Sentry distributed tracing baggage.
+      schema:
+        type: string
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: user_8483559
+        type:
+          type: string
+          example: user
+        firstName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUrl:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        lastLogin:
+          type: string
+          format: date-time
+        bounce:
+          type: integer
+        applicationsData:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              language:
+                type: string
+              level:
+                type: integer
+              totalConnections:
+                type: integer
+              mainFavoriteChampionshipClubId:
+                type: string
+              useSSO:
+                type: boolean
+              internationalLevel:
+                type: integer
+              predictedFavorites:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      topScorerId:
+                        type: string
+                      winnerClubId:
+                        type: string
+              gameOptions:
+                type: object
+              adsToDisplay:
+                type: object
+
+    PublicUser:
+      type: object
+      description: Public user profile, as seen in leaderboards.
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        username:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        level:
+          type: integer
+        contactStatus:
+          type: integer
+        predictedFavorites:
+          type: object
+          properties:
+            topScorerId:
+              type: string
+            winnerClubId:
+              type: string
+
+    UserRanking:
+      type: object
+      properties:
+        userId:
+          type: string
+        ranking:
+          type: object
+          properties:
+            calculatedForecasts:
+              type: integer
+            totalForecasts:
+              type: integer
+            goodForecasts:
+              type: integer
+            exactForecasts:
+              type: integer
+            points:
+              type: integer
+            rank:
+              type: integer
+
+    ContestCard:
+      type: object
+      properties:
+        cardType:
+          type: string
+          example: challenge
+        status:
+          type: integer
+          description: "4 = active/live"
+        contestId:
+          type: string
+          example: mpp_challenge_UDKDDH27
+        shortContestId:
+          type: string
+        title:
+          type: string
+        championshipId:
+          type: integer
+        season:
+          type: integer
+        adminId:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        championshipLogoUrl:
+          type: string
+          format: uri
+        backgroundImageUrl:
+          type: string
+          format: uri
+          nullable: true
+        isSupervised:
+          type: boolean
+        isPinned:
+          type: boolean
+        userRanking:
+          type: integer
+          description: "-1 when unranked"
+        userTotalPoints:
+          type: integer
+        totalUsers:
+          type: integer
+        isLive:
+          type: boolean
+        firstGameWeekNumber:
+          type: integer
+        lastGameWeekNumber:
+          type: integer
+        actualGameWeekNumber:
+          type: integer
+        totalGameWeekNumber:
+          type: integer
+        userForecasts:
+          type: integer
+        totalGameWeekForecasts:
+          type: integer
+
+    Challenge:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mpp_challenge_UDKDDH27
+        shortId:
+          type: string
+        name:
+          type: string
+        adminId:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        status:
+          type: integer
+        type:
+          type: string
+          example: mpp_challenge
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedUsers:
+          type: array
+          items:
+            type: string
+        usersQuantity:
+          type: integer
+        forecastsQuantity:
+          type: integer
+        totalGameWeekForecasts:
+          type: integer
+        hasJoined:
+          type: boolean
+        userForecasts:
+          type: integer
+        startsIn:
+          type: integer
+          description: Seconds until the contest starts.
+        contestsContainerSeason:
+          type: integer
+        gameSettings:
+          type: object
+          properties:
+            bonuses:
+              type: object
+            championshipId:
+              type: integer
+            championshipSeason:
+              type: integer
+            firstGameWeekNumber:
+              type: integer
+            lastGameWeekNumber:
+              type: integer
+            gameWeeksQuantity:
+              type: integer
+
+    GameWeek:
+      type: object
+      properties:
+        gameWeekNumber:
+          type: integer
+        matchesIds:
+          type: array
+          items:
+            type: string
+            example: mpp_championship_match_2608241
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        roundType:
+          type: string
+          example: round
+        startIn:
+          type: integer
+          description: Seconds until the game week starts (negative if past).
+        leagueCalculatedAt:
+          type: string
+          format: date-time
+        challengeCalculatedAt:
+          type: string
+          format: date-time
+        calculatedAt:
+          type: string
+          format: date-time
+
+    MatchSummary:
+      type: object
+      nullable: true
+      description: "null when the match has no data yet."
+      properties:
+        matchId:
+          type: string
+        championshipId:
+          type: integer
+        gameWeekNumber:
+          type: integer
+        date:
+          type: string
+          format: date-time
+        period:
+          type: string
+          example: fullTime
+        matchTime:
+          type: string
+          example: "90' +8"
+        quotations:
+          type: object
+          properties:
+            home:
+              type: integer
+            draw:
+              type: integer
+            away:
+              type: integer
+        stats:
+          type: object
+          properties:
+            bets:
+              type: object
+              properties:
+                home:
+                  type: number
+                  format: float
+                draw:
+                  type: number
+                  format: float
+                away:
+                  type: number
+                  format: float
+        home:
+          type: object
+          properties:
+            clubId:
+              type: string
+            score:
+              type: integer
+            rank:
+              type: integer
+            seasonResults:
+              type: array
+              items:
+                type: string
+                example: w
+        away:
+          type: object
+          properties:
+            clubId:
+              type: string
+            score:
+              type: integer
+            rank:
+              type: integer
+            seasonResults:
+              type: array
+              items:
+                type: string
+                example: l
+        userForecasts:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ForecastResult'
+
+    MatchDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mpp_championship_match_2608275
+        championshipId:
+          type: integer
+        season:
+          type: integer
+        gameWeekNumber:
+          type: integer
+        date:
+          type: string
+          format: date-time
+        quotations:
+          type: object
+          properties:
+            home:
+              type: integer
+            draw:
+              type: integer
+            away:
+              type: integer
+        stats:
+          type: object
+          properties:
+            bets:
+              type: object
+              properties:
+                home:
+                  type: number
+                  format: float
+                draw:
+                  type: number
+                  format: float
+                away:
+                  type: number
+                  format: float
+        areVideosAvailable:
+          type: boolean
+        needLiveRating:
+          type: boolean
+        eventsTimeline:
+          type: array
+          items:
+            type: object
+        home:
+          type: object
+          properties:
+            clubId:
+              type: string
+        away:
+          type: object
+          properties:
+            clubId:
+              type: string
+
+    ClubSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mpp_championship_club_summary_366
+        type:
+          type: string
+          example: mpp_championship_club_summary
+        statsByChampionship:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              standings:
+                type: object
+                properties:
+                  rank:
+                    type: integer
+                  points:
+                    type: integer
+                  goalsFor:
+                    type: integer
+                  goalsAgainst:
+                    type: integer
+              bestScorers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    goals:
+                      type: integer
+              bestAssistsPlayers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    assists:
+                      type: integer
+              playersData:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    position:
+                      type: integer
+                    assets:
+                      type: object
+              bestPlayer:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  averageRating:
+                    type: number
+                  averageRatingReferenceAtPosition:
+                    type: number
+              seasonResults:
+                type: array
+                items:
+                  type: string
+
+    ChampionshipCalendar:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mpp_championship_calendar_2025_8
+        type:
+          type: string
+          example: mpp_championship_calendar
+        gameWeeks:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/GameWeek'
+        rounds:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              roundType:
+                type: string
+                example: round
+              groups:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    matchesIds:
+                      type: array
+                      items:
+                        type: string
+
+    ForecastPoints:
+      type: object
+      properties:
+        base:
+          type: integer
+        exact:
+          type: integer
+        extra:
+          type: integer
+        bonus:
+          type: integer
+        total:
+          type: integer
+
+    ForecastResult:
+      type: object
+      properties:
+        homeScore:
+          type: integer
+        awayScore:
+          type: integer
+        editedAt:
+          type: string
+          format: date-time
+        points:
+          $ref: '#/components/schemas/ForecastPoints'
+
+    Notifications:
+      type: object
+      properties:
+        summariesCount:
+          type: integer
+        unreadSummariesCount:
+          type: integer
+          nullable: true
+
+paths:
+
+  # ── User ──────────────────────────────────────────────────────────────────
+
+  /user:
+    get:
+      summary: Get authenticated user profile
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Authenticated user object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /user/register-connection:
+    patch:
+      summary: Register a user connection event
+      operationId: patchUserRegisterConnection
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '204':
+          description: Connection registered.
+
+  /user-contests:
+    get:
+      summary: List user contests and pinned challenges
+      operationId: getUserContests
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: User's active contests plus editorially pinned challenge cards.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hasNewContestMessages:
+                    type: boolean
+                  contestsCards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContestCard'
+                  pinnedChallengesCards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContestCard'
+                  pendingContestsInvitationsCards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContestCard'
+
+  /user-bonuses:
+    get:
+      summary: Get user bonus items
+      operationId: getUserBonuses
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: List of available bonuses for the user.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /user-notifications/unread:
+    get:
+      summary: Get unread notification counts
+      operationId: getUserNotificationsUnread
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Unread notification summary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notifications'
+        '304':
+          description: Not Modified (cached).
+
+  /user-game-week-reveal:
+    get:
+      summary: Get user game week reveal status
+      operationId: getUserGameWeekReveal
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Game week reveal data.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /optins-center:
+    get:
+      summary: Get opt-in center configuration
+      operationId: getOptinsCenter
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Opt-in options for the user.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  # ── Match Forecasts ───────────────────────────────────────────────────────
+
+  /user-match-forecasts/entity/{entityType}/match/{matchId}:
+    patch:
+      summary: Submit or update a score forecast for a match
+      operationId: patchUserMatchForecast
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: entityType
+          in: path
+          required: true
+          schema:
+            type: string
+            example: general
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mpp_championship_match_2608261
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - homeScore
+                - awayScore
+              properties:
+                homeScore:
+                  type: integer
+                awayScore:
+                  type: integer
+                originPage:
+                  type: string
+                  example: competitionMatchTab
+      responses:
+        '200':
+          description: Updated forecast with current points.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  general:
+                    $ref: '#/components/schemas/ForecastResult'
+
+  # ── Challenges / Contests ─────────────────────────────────────────────────
+
+  /challenge/{challengeId}:
+    get:
+      summary: Get challenge details
+      operationId: getChallenge
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: challengeId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mpp_challenge_UDKDDH27
+      responses:
+        '200':
+          description: Challenge object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challenge'
+
+  /challenge-standings/top-users-standings:
+    get:
+      summary: Get top overall standings for a challenge
+      operationId: getChallengeTopUsersStandings
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: challengeId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: mpp_challenge_UDKDDH27
+      responses:
+        '200':
+          description: Top users standings for the challenge.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  standings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/PublicUser'
+                  usersQuantity:
+                    type: integer
+                  userRanking:
+                    $ref: '#/components/schemas/UserRanking'
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  hasNext:
+                    type: boolean
+
+  /challenge-standings/users-standings:
+    get:
+      summary: Get paginated user standings for a challenge
+      operationId: getChallengeUsersStandings
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: challengeId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: mpp_challenge_UDKDDH27
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: gameWeekNumber
+          in: query
+          required: false
+          description: Filter standings by a specific game week.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Paginated standings list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  standings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/PublicUser'
+                  usersQuantity:
+                    type: integer
+                  userRanking:
+                    $ref: '#/components/schemas/UserRanking'
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  hasNext:
+                    type: boolean
+
+  /super-pinned-challenge:
+    get:
+      summary: Get the super-pinned challenge
+      operationId: getSuperPinnedChallenge
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Super-pinned challenge details.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /super-pinned-predictions-challenge:
+    get:
+      summary: Get the super-pinned predictions challenge
+      operationId: getSuperPinnedPredictionsChallenge
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Super-pinned predictions challenge details.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /contest/{contestId}/seasons-history:
+    get:
+      summary: Get seasons history standings for a contest
+      operationId: getContestSeasonsHistory
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: contestId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mpp_challenge_UDKDDH27
+      responses:
+        '200':
+          description: Historical standings across seasons.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  standings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/PublicUser'
+        '304':
+          description: Not Modified (cached).
+
+  # ── Championship ──────────────────────────────────────────────────────────
+
+  /championships-settings:
+    get:
+      summary: Get global championship settings
+      operationId: getChampionshipsSettings
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Championship configuration.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championships-settings/active:
+    get:
+      summary: Get active championship settings
+      operationId: getChampionshipsSettingsActive
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Active championship settings.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championships-current-matches:
+    get:
+      summary: Get current matches across championships
+      operationId: getChampionshipsCurrentMatches
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: Current matches.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championships-current-matches/by-date:
+    get:
+      summary: Get current matches grouped by date
+      operationId: getChampionshipsCurrentMatchesByDate
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: timezone
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Europe/Paris
+      responses:
+        '200':
+          description: Current matches grouped by date.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championship-available-predictions/{championshipId}:
+    get:
+      summary: Get available prediction types for a championship
+      operationId: getChampionshipAvailablePredictions
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: championshipId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 8
+      responses:
+        '200':
+          description: Available prediction types (e.g. top scorer, winner club).
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championship-clubs:
+    get:
+      summary: Get all championship clubs
+      operationId: getChampionshipClubs
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: List of championship clubs.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championship-club/lfp/{clubId}:
+    get:
+      summary: Get a specific championship club by LFP ID
+      operationId: getChampionshipClubLfp
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: clubId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 13
+      responses:
+        '200':
+          description: Club details.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
+
+  /championship-clubs-summaries:
+    get:
+      summary: Get club summaries for a match
+      operationId: getChampionshipClubsSummaries
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: matchId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: mpp_championship_match_2608275
+      responses:
+        '200':
+          description: >
+            Object keyed by club ID. Values are ClubSummary objects with
+            standings, top scorers, assists, and player data.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ClubSummary'
+
+  /championship-calendar/{championshipId}:
+    get:
+      summary: Get full championship calendar with game weeks and rounds
+      operationId: getChampionshipCalendar
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: championshipId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 8
+      responses:
+        '200':
+          description: Championship calendar with game weeks and round/group structure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChampionshipCalendar'
+
+  /championship-calendar/{championshipId}/nearest-game-weeks:
+    get:
+      summary: Get the nearest (previous and next) game weeks
+      operationId: getChampionshipNearestGameWeeks
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: championshipId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 8
+      responses:
+        '200':
+          description: Nearest game weeks (previous and next).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nearestGameWeeks:
+                    type: object
+                    properties:
+                      previousGameWeek:
+                        $ref: '#/components/schemas/GameWeek'
+                        nullable: true
+                      nextGameWeek:
+                        $ref: '#/components/schemas/GameWeek'
+
+  /championship-calendar/{championshipId}/next-game-weeks:
+    get:
+      summary: Get upcoming game weeks within a range
+      operationId: getChampionshipNextGameWeeks
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: championshipId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 8
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2000-01-01"
+        - name: fromGameWeekNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: toGameWeekNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 9
+      responses:
+        '200':
+          description: Upcoming game weeks matching the given range.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nearestGameWeeks:
+                    type: object
+                    properties:
+                      nextGameWeek:
+                        $ref: '#/components/schemas/GameWeek'
+
+  /championship-match/{matchId}:
+    get:
+      summary: Get detailed match information
+      operationId: getChampionshipMatch
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mpp_championship_match_2608275
+      responses:
+        '200':
+          description: Full match details including quotations, stats, and events.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchDetail'
+
+  /championship-match/summaries:
+    post:
+      summary: Batch fetch match summaries by match IDs
+      operationId: postChampionshipMatchSummaries
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchesIds
+              properties:
+                matchesIds:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - mpp_championship_match_2608292
+                    - mpp_championship_match_2608291
+      responses:
+        '200':
+          description: >
+            Object keyed by match ID. Values are MatchSummary objects or null
+            for matches not yet available.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/MatchSummary'
+
+  # ── Misc ──────────────────────────────────────────────────────────────────
+
+  /changelog/versions:
+    get:
+      summary: Get app changelog versions
+      operationId: getChangelogVersions
+      parameters:
+        - $ref: '#/components/parameters/AppContext'
+        - $ref: '#/components/parameters/Baggage'
+      responses:
+        '200':
+          description: List of app versions with changelog.
+          content:
+            application/json:
+              schema:
+                type: object
+        '304':
+          description: Not Modified (cached).
