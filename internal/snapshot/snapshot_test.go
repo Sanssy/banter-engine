@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/model"
 	"github.com/DSanoussy/banter-engine/internal/rivalries"
@@ -66,6 +67,22 @@ func TestSaveAndLoadRivalries(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("LoadRivalries() = %#v, want %#v", got, want)
+	}
+}
+
+func TestSaveAndLoadForecasts(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "data", "forecasts.json")
+	want := []forecasts.Forecast{{UserID: "user-1", MatchID: "match-1", Points: 5}}
+
+	if err := SaveForecasts(path, want); err != nil {
+		t.Fatalf("SaveForecasts() error = %v", err)
+	}
+	got, err := LoadForecasts(path)
+	if err != nil {
+		t.Fatalf("LoadForecasts() error = %v", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("LoadForecasts() = %#v, want %#v", got, want)
 	}
 }
 

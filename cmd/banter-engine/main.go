@@ -20,6 +20,7 @@ const challengeID = "mpp_challenge_UDKDDH27"
 const snapshotPath = "data/standings.json"
 const matchesSnapshotPath = "data/matches.json"
 const rivalriesSnapshotPath = "data/rivalries.json"
+const forecastsSnapshotPath = "data/forecasts.json"
 const runInterval = 5 * time.Minute
 
 func main() {
@@ -58,6 +59,10 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 	if err != nil {
 		return err
 	}
+	previousForecasts, err := snapshot.LoadForecasts(forecastsSnapshotPath)
+	if err != nil {
+		return err
+	}
 
 	standings, err := client.GetStandings(challengeID)
 	if err != nil {
@@ -90,6 +95,7 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 		matches[i].Events = events
 	}
 	var forecastHistory []forecasts.Forecast
+	var allForecasts []forecasts.Forecast
 	var messages []string
 	updatedRivalries, rivalryOpportunities := rivalries.Update(standings, rivalryState)
 	for _, opportunity := range rivalryOpportunities {
@@ -109,6 +115,7 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 		if err != nil {
 			return err
 		}
+		allForecasts = append(allForecasts, forecasts...)
 		for _, forecast := range forecasts {
 			fmt.Printf("  %s: %d-%d (%d points)\n", forecast.UserID, forecast.Prediction.Home, forecast.Prediction.Away, forecast.Points)
 		}
@@ -127,6 +134,11 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 				messages = append(messages, message)
 			}
 		}
+	}
+	for _, opportunity := range opportunities.DetectPointImpacts(previousForecasts, allForecasts) {
+		message := banter.Generate(opportunity)
+		fmt.Println(message)
+		messages = append(messages, message)
 	}
 	for _, opportunity := range opportunities.DetectStreaks(forecastHistory) {
 		message := banter.Generate(opportunity)
@@ -153,6 +165,9 @@ func run(client *mpp.Client, discordClient *discord.Client) error {
 		return err
 	}
 	if err := snapshot.SaveRivalries(rivalriesSnapshotPath, updatedRivalries); err != nil {
+		return err
+	}
+	if err := snapshot.SaveForecasts(forecastsSnapshotPath, allForecasts); err != nil {
 		return err
 	}
 	return nil

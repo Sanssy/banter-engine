@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/model"
 	"github.com/DSanoussy/banter-engine/internal/rivalries"
@@ -105,4 +106,34 @@ func LoadRivalries(path string) ([]rivalries.Rivalry, error) {
 		return nil, fmt.Errorf("decode rivalries snapshot: %w", err)
 	}
 	return state, nil
+}
+
+func SaveForecasts(path string, forecastData []forecasts.Forecast) error {
+	data, err := json.MarshalIndent(forecastData, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode forecasts: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create snapshot directory: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		return fmt.Errorf("write forecasts snapshot: %w", err)
+	}
+	return nil
+}
+
+func LoadForecasts(path string) ([]forecasts.Forecast, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return []forecasts.Forecast{}, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read forecasts snapshot: %w", err)
+	}
+
+	var forecastData []forecasts.Forecast
+	if err := json.Unmarshal(data, &forecastData); err != nil {
+		return nil, fmt.Errorf("decode forecasts snapshot: %w", err)
+	}
+	return forecastData, nil
 }

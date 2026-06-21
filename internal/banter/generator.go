@@ -51,6 +51,12 @@ func Generate(op opportunities.Opportunity) string {
 		return fmt.Sprintf("🔄 %s renverse complètement %s.", op.Actor, op.Target)
 	case opportunities.EqualizerChaos:
 		return fmt.Sprintf("🌪️ %s égalise sur %s.", op.Actor, op.Target)
+	case opportunities.BiggestWinner:
+		return fmt.Sprintf("💰 %s signe le plus gros gain avec %s points.", op.Actor, op.Target)
+	case opportunities.BiggestLoser:
+		return fmt.Sprintf("📉 %s subit la plus grosse perte avec %s points.", op.Actor, op.Target)
+	case opportunities.PointExplosion:
+		return fmt.Sprintf("💥 Explosion de points pour %s : %s.", op.Actor, op.Target)
 	case opportunities.NinetiethMinuteHeartbreak:
 		return fmt.Sprintf("💔 %s perd son prono parfait dans les derniers instants de %s.", op.Actor, op.Target)
 	case opportunities.VARVictim:

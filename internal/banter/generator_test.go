@@ -262,6 +262,33 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "🌪️ Espagne égalise sur France - Espagne.",
 		},
+		{
+			name: "biggest winner",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.BiggestWinner,
+				Actor:  "Julien",
+				Target: "+7",
+			},
+			want: "💰 Julien signe le plus gros gain avec +7 points.",
+		},
+		{
+			name: "biggest loser",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.BiggestLoser,
+				Actor:  "William",
+				Target: "-5",
+			},
+			want: "📉 William subit la plus grosse perte avec -5 points.",
+		},
+		{
+			name: "point explosion",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.PointExplosion,
+				Actor:  "Julien",
+				Target: "+7",
+			},
+			want: "💥 Explosion de points pour Julien : +7.",
+		},
 	}
 
 	for _, tt := range tests {

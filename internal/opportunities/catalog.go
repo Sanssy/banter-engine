@@ -24,6 +24,9 @@ const (
 	GoalSwing                 = "GoalSwing"
 	MatchTurnaround           = "MatchTurnaround"
 	EqualizerChaos            = "EqualizerChaos"
+	BiggestWinner             = "BiggestWinner"
+	BiggestLoser              = "BiggestLoser"
+	PointExplosion            = "PointExplosion"
 	NinetiethMinuteHeartbreak = "90thMinuteHeartbreak"
 	VARVictim                 = "VARVictim"
 	RedCardDisaster           = "RedCardDisaster"
@@ -81,6 +84,9 @@ var catalog = []Definition{
 	{GoalSwing, CategoryLive, "A goal changes the live score.", liveDetection(false)},
 	{MatchTurnaround, CategoryLive, "The winning side changes during a match.", liveDetection(false)},
 	{EqualizerChaos, CategoryLive, "A goal brings a live match level.", liveDetection(false)},
+	{BiggestWinner, CategoryPrediction, "A user records the largest point gain.", forecastHistory()},
+	{BiggestLoser, CategoryPrediction, "A user records the largest point loss.", forecastHistory()},
+	{PointExplosion, CategoryPrediction, "A user gains at least five points at once.", forecastHistory()},
 	{NinetiethMinuteHeartbreak, CategoryLive, "A late goal destroys an exact forecast.", liveDetection(true)},
 	{VARVictim, CategoryLive, "A VAR decision destroys a forecast.", liveDetection(true)},
 	{RedCardDisaster, CategoryLive, "A red card threatens a forecast.", liveDetection(true)},
