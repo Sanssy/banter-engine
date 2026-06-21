@@ -1,0 +1,53 @@
+package opportunities
+
+import (
+	"fmt"
+
+	"github.com/DSanoussy/banter-engine/internal/matches"
+)
+
+func DetectScoreEvents(previous, current matches.Match) []Opportunity {
+	if previous.Score == current.Score {
+		return nil
+	}
+
+	matchLabel := fmt.Sprintf("%s - %s", current.HomeTeam, current.AwayTeam)
+	scoringTeam := scoreChangeActor(previous, current)
+	detected := []Opportunity{{
+		Type:   GoalSwing,
+		Actor:  scoringTeam,
+		Target: fmt.Sprintf("%s (%d-%d)", matchLabel, current.Score.Home, current.Score.Away),
+	}}
+
+	previousOutcome := scoreOutcome(previous.Score)
+	currentOutcome := scoreOutcome(current.Score)
+	if previousOutcome == currentOutcome {
+		return detected
+	}
+	if currentOutcome == drawOutcome {
+		return append(detected, Opportunity{
+			Type:   EqualizerChaos,
+			Actor:  scoringTeam,
+			Target: matchLabel,
+		})
+	}
+	if previousOutcome != drawOutcome {
+		detected = append(detected, Opportunity{
+			Type:   MatchTurnaround,
+			Actor:  outcomeName(current, currentOutcome),
+			Target: outcomeName(previous, previousOutcome),
+		})
+	}
+	return detected
+}
+
+func scoreChangeActor(previous, current matches.Match) string {
+	switch {
+	case current.Score.Home > previous.Score.Home && current.Score.Away == previous.Score.Away:
+		return current.HomeTeam
+	case current.Score.Away > previous.Score.Away && current.Score.Home == previous.Score.Home:
+		return current.AwayTeam
+	default:
+		return fmt.Sprintf("%s - %s", current.HomeTeam, current.AwayTeam)
+	}
+}

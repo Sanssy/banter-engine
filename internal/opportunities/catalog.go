@@ -21,6 +21,9 @@ const (
 	MatchEnded                = "MatchEnded"
 	ScoreChanged              = "ScoreChanged"
 	ImportantMatchEvent       = "ImportantMatchEvent"
+	GoalSwing                 = "GoalSwing"
+	MatchTurnaround           = "MatchTurnaround"
+	EqualizerChaos            = "EqualizerChaos"
 	NinetiethMinuteHeartbreak = "90thMinuteHeartbreak"
 	VARVictim                 = "VARVictim"
 	RedCardDisaster           = "RedCardDisaster"
@@ -75,6 +78,9 @@ var catalog = []Definition{
 	{MatchEnded, CategoryLive, "A live match reaches full time.", liveDetection(false)},
 	{ScoreChanged, CategoryLive, "A live match score changes.", liveDetection(false)},
 	{ImportantMatchEvent, CategoryLive, "A new important match event occurs.", liveDetection(false)},
+	{GoalSwing, CategoryLive, "A goal changes the live score.", liveDetection(false)},
+	{MatchTurnaround, CategoryLive, "The winning side changes during a match.", liveDetection(false)},
+	{EqualizerChaos, CategoryLive, "A goal brings a live match level.", liveDetection(false)},
 	{NinetiethMinuteHeartbreak, CategoryLive, "A late goal destroys an exact forecast.", liveDetection(true)},
 	{VARVictim, CategoryLive, "A VAR decision destroys a forecast.", liveDetection(true)},
 	{RedCardDisaster, CategoryLive, "A red card threatens a forecast.", liveDetection(true)},

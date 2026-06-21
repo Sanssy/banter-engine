@@ -235,6 +235,33 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "🥉 Sanssy met la pression sur William pour le podium.",
 		},
+		{
+			name: "goal swing",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.GoalSwing,
+				Actor:  "France",
+				Target: "France - Espagne (1-0)",
+			},
+			want: "⚽ France fait basculer le score sur France - Espagne (1-0).",
+		},
+		{
+			name: "match turnaround",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.MatchTurnaround,
+				Actor:  "France",
+				Target: "Espagne",
+			},
+			want: "🔄 France renverse complètement Espagne.",
+		},
+		{
+			name: "equalizer chaos",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.EqualizerChaos,
+				Actor:  "Espagne",
+				Target: "France - Espagne",
+			},
+			want: "🌪️ Espagne égalise sur France - Espagne.",
+		},
 	}
 
 	for _, tt := range tests {

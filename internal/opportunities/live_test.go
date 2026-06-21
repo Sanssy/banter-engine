@@ -32,6 +32,7 @@ func TestDetectLiveUpdates(t *testing.T) {
 	want := []Opportunity{
 		{Type: MatchStarted, Actor: "France - Espagne"},
 		{Type: ScoreChanged, Actor: "France - Espagne", Target: "1-0"},
+		{Type: GoalSwing, Actor: "France", Target: "France - Espagne (1-0)"},
 		{Type: ImportantMatchEvent, Actor: "France - Espagne", Target: "goal 12'"},
 	}
 
