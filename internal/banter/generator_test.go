@@ -95,6 +95,33 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			want: "🎯 Julien a défié la foule et avait raison sur France - Espagne.",
 		},
 		{
+			name: "crowd favorite",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.CrowdFavorite,
+				Actor:  "France",
+				Target: "70%",
+			},
+			want: "👥 France concentre 70% des pronostics.",
+		},
+		{
+			name: "crowd trap",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.CrowdTrap,
+				Actor:  "Espagne",
+				Target: "France",
+			},
+			want: "🪤 La foule choisit Espagne plutôt que le favori France.",
+		},
+		{
+			name: "popular mistake",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.PopularMistake,
+				Actor:  "France",
+				Target: "France - Espagne",
+			},
+			want: "😬 Le choix populaire France s'effondre sur France - Espagne.",
+		},
+		{
 			name:        "prediction massacre",
 			opportunity: opportunities.Opportunity{Type: opportunities.PredictionMassacre, Actor: "France - Espagne"},
 			want:        "☠️ Extinction des pronostics détectée sur France - Espagne.",

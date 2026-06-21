@@ -14,6 +14,9 @@ const (
 	EveryoneWasWrong          = "EveryoneWasWrong"
 	TheChosenOne              = "TheChosenOne"
 	AgainstTheCrowd           = "AgainstTheCrowd"
+	CrowdFavorite             = "CrowdFavorite"
+	CrowdTrap                 = "CrowdTrap"
+	PopularMistake            = "PopularMistake"
 	PredictionMassacre        = "PredictionMassacre"
 	HotStreak                 = "HotStreak"
 	ColdStreak                = "ColdStreak"
@@ -42,6 +45,7 @@ type Category string
 const (
 	CategoryRanking    Category = "ranking"
 	CategoryPrediction Category = "prediction"
+	CategoryCrowd      Category = "crowd"
 	CategoryStreak     Category = "streak"
 	CategoryLive       Category = "live"
 	CategoryRivalry    Category = "rivalry"
@@ -75,7 +79,10 @@ var catalog = []Definition{
 	{HugeUpset, CategoryPrediction, "The match favorite fails to win.", matchDetection(false)},
 	{EveryoneWasWrong, CategoryPrediction, "More than 80 percent backed the same wrong outcome.", matchDetection(false)},
 	{TheChosenOne, CategoryPrediction, "Exactly one player picked a rare correct outcome.", matchDetection(true)},
-	{AgainstTheCrowd, CategoryPrediction, "A player picked a rare correct outcome.", matchDetection(true)},
+	{AgainstTheCrowd, CategoryCrowd, "A player picked a rare correct outcome.", matchDetection(true)},
+	{CrowdFavorite, CategoryCrowd, "At least 60 percent back the same outcome.", matchDetection(false)},
+	{CrowdTrap, CategoryCrowd, "The crowd backs an outcome other than the betting favorite.", matchDetection(false)},
+	{PopularMistake, CategoryCrowd, "The crowd's popular outcome is wrong.", matchDetection(false)},
 	{PredictionMassacre, CategoryPrediction, "More than half of predictions are wrong.", matchDetection(false)},
 	{HotStreak, CategoryStreak, "A player has at least five consecutive successes.", forecastHistory()},
 	{ColdStreak, CategoryStreak, "A player has at least five consecutive failures.", forecastHistory()},

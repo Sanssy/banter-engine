@@ -34,6 +34,8 @@ func TestDetectSurprises(t *testing.T) {
 		{Type: HugeUpset, Actor: "Espagne", Target: "France"},
 		{Type: EveryoneWasWrong, Actor: "France - Espagne"},
 		{Type: PredictionMassacre, Actor: "France - Espagne"},
+		{Type: CrowdFavorite, Actor: "France", Target: "90%"},
+		{Type: PopularMistake, Actor: "France", Target: "France - Espagne"},
 		{Type: TheChosenOne, Actor: "user-1", Target: "France - Espagne"},
 		{Type: AgainstTheCrowd, Actor: "user-1", Target: "France - Espagne"},
 	}

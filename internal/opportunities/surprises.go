@@ -26,6 +26,7 @@ func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Oppo
 		})
 	}
 	detected = append(detected, DetectMassFailures(match)...)
+	detected = append(detected, DetectCrowdIntelligence(match)...)
 	detected = append(detected, DetectProphets(match, forecasts)...)
 	return detected
 }
