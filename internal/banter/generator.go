@@ -63,6 +63,8 @@ func Generate(op opportunities.Opportunity) string {
 		return fmt.Sprintf("🪂 %s dégringole de %s places au classement.", op.Actor, op.Target)
 	case opportunities.RunawayLeader:
 		return fmt.Sprintf("🏃 %s creuse l'écart devant %s.", op.Actor, op.Target)
+	case opportunities.PodiumFight:
+		return fmt.Sprintf("🥉 %s met la pression sur %s pour le podium.", op.Actor, op.Target)
 	default:
 		return fmt.Sprintf("%s: %s -> %s", op.Type, op.Actor, op.Target)
 	}

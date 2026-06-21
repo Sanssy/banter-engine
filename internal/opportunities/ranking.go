@@ -26,6 +26,7 @@ func Detect(previous, current []model.Standing) []Opportunity {
 
 	detected := DetectRankingOvertakes(previous, current)
 	detected = append(detected, detectTop3Changes(previous, current)...)
+	detected = append(detected, DetectPodiumFight(previous, current)...)
 	detected = append(detected, DetectRankingTrends(previous, current)...)
 
 	if opportunity, ok := detectLeaderUnderPressure(previous, current); ok {

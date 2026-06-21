@@ -226,6 +226,15 @@ func TestGenerateSupportedOpportunities(t *testing.T) {
 			},
 			want: "🏃 Amine creuse l'écart devant Sanssy.",
 		},
+		{
+			name: "podium fight",
+			opportunity: opportunities.Opportunity{
+				Type:   opportunities.PodiumFight,
+				Actor:  "Sanssy",
+				Target: "William",
+			},
+			want: "🥉 Sanssy met la pression sur William pour le podium.",
+		},
 	}
 
 	for _, tt := range tests {
