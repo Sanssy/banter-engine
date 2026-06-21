@@ -3,164 +3,43 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 
-	"github.com/DSanoussy/banter-engine/internal/banter"
-	"github.com/DSanoussy/banter-engine/internal/catalog"
-	"github.com/DSanoussy/banter-engine/internal/contextbuilder"
-	"github.com/DSanoussy/banter-engine/internal/discord"
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	matchmodel "github.com/DSanoussy/banter-engine/internal/matches"
-	"github.com/DSanoussy/banter-engine/internal/mpp"
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
-	"github.com/DSanoussy/banter-engine/internal/rivalries"
-	"github.com/DSanoussy/banter-engine/internal/snapshot"
+	"github.com/DSanoussy/banter-engine/internal/config"
+	"github.com/DSanoussy/banter-engine/internal/engine"
+	"github.com/DSanoussy/banter-engine/internal/logging"
 )
 
-const challengeID = "mpp_challenge_UDKDDH27"
-const snapshotPath = "data/standings.json"
-const matchesSnapshotPath = "data/matches.json"
-const rivalriesSnapshotPath = "data/rivalries.json"
-const forecastsSnapshotPath = "data/forecasts.json"
-const opportunityCatalogPath = "resources/opportunities.json"
-const runInterval = 5 * time.Minute
-
 func main() {
-	token := os.Getenv("MPP_TOKEN")
-	if token == "" {
-		log.Fatal("MPP_TOKEN environment variable is required")
-	}
-	webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
-	if webhookURL == "" {
-		log.Fatal("DISCORD_WEBHOOK_URL environment variable is required")
-	}
-
-	client := mpp.NewClient(token)
-	discordClient := discord.NewClient(webhookURL)
-	definitions, err := catalog.LoadOpportunityCatalog(opportunityCatalogPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ticker := time.NewTicker(runInterval)
-	defer ticker.Stop()
-
-	for {
-		if err := run(client, discordClient, definitions); err != nil {
-			log.Printf("banter engine run failed: %v", err)
-		}
-		<-ticker.C
+	logger := logging.New(os.Stderr, "main")
+	if err := run(os.Args[1:]); err != nil {
+		logger.Error("%v", err)
+		os.Exit(1)
 	}
 }
 
-func run(
-	client *mpp.Client,
-	discordClient *discord.Client,
-	definitions []catalog.OpportunityDefinition,
-) error {
-	previousStandings, err := snapshot.LoadStandings(snapshotPath)
-	if err != nil {
-		return err
+func run(args []string) error {
+	if len(args) != 1 || (args[0] != "run" && args[0] != "dry-run") {
+		return fmt.Errorf("usage: banter-engine <run|dry-run>")
 	}
-	previousMatches, err := snapshot.LoadMatches(matchesSnapshotPath)
-	if err != nil {
-		return err
+
+	if args[0] == "dry-run" {
+		if err := os.Setenv("DRY_RUN", "true"); err != nil {
+			return fmt.Errorf("enable dry run: %w", err)
+		}
 	}
-	rivalryState, err := snapshot.LoadRivalries(rivalriesSnapshotPath)
-	if err != nil {
-		return err
-	}
-	previousForecasts, err := snapshot.LoadForecasts(forecastsSnapshotPath)
+	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
 
-	standings, err := client.GetStandings(challengeID)
+	runtime, err := engine.New(cfg, os.Stdout)
 	if err != nil {
 		return err
 	}
-
-	for _, standing := range standings {
-		fmt.Printf("%d. %-12s %d\n", standing.Rank, standing.Name, standing.Points)
-	}
-
-	matches, err := client.GetMatches()
-	if err != nil {
-		return err
-	}
-	previousMatchesByID := make(map[string]matchmodel.Match, len(previousMatches))
-	for _, match := range previousMatches {
-		previousMatchesByID[match.MatchID] = match
-	}
-	for i := range matches {
-		isLive := matches[i].Status != "" && matches[i].Status != "preMatch" && matches[i].Status != "fullTime"
-		previousMatch, existed := previousMatchesByID[matches[i].MatchID]
-		justEnded := existed && matches[i].Status == "fullTime" && previousMatch.Status != "fullTime"
-		if !isLive && !justEnded {
-			continue
-		}
-		events, err := client.GetMatchEvents(matches[i].MatchID)
-		if err != nil {
-			return err
-		}
-		matches[i].Events = events
-	}
-	var forecastHistory []forecasts.Forecast
-	var allForecasts []forecasts.Forecast
-	var detected []opportunities.Opportunity
-	updatedRivalries, rivalryOpportunities := rivalries.Update(standings, rivalryState)
-	detected = append(detected, rivalryOpportunities...)
-	detected = append(detected, opportunities.DetectLiveUpdates(previousMatches, matches)...)
-	for _, match := range matches {
-		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
-
-		forecasts, err := client.GetForecasts(challengeID, match)
-		if err != nil {
-			return err
-		}
-		allForecasts = append(allForecasts, forecasts...)
-		for _, forecast := range forecasts {
-			fmt.Printf("  %s: %d-%d (%d points)\n", forecast.UserID, forecast.Prediction.Home, forecast.Prediction.Away, forecast.Points)
-		}
-		if match.Status == "fullTime" {
-			forecastHistory = append(forecastHistory, forecasts...)
-		}
-		detected = append(detected, opportunities.DetectSurprises(match, forecasts)...)
-		if previousMatch, ok := previousMatchesByID[match.MatchID]; ok {
-			detected = append(detected, opportunities.DetectHeartbreaks(previousMatch, match, forecasts)...)
-			detected = append(detected, opportunities.DetectLatePointImpacts(previousMatch, match, previousForecasts, forecasts)...)
-		}
-	}
-	detected = append(detected, opportunities.DetectPointImpacts(previousForecasts, allForecasts)...)
-	detected = append(detected, opportunities.DetectStreaks(forecastHistory)...)
-	detected = append(detected, opportunities.Detect(previousStandings, standings)...)
-
-	banterContext := contextbuilder.Build(standings, allForecasts, matches, detected)
-	generator := banter.NewGenerator(nil)
-	for _, opportunity := range detected {
-		definition, err := catalog.ValidateOpportunity(definitions, opportunity)
-		if err != nil {
-			return err
-		}
-		message := generator.GenerateWithDefinition(context.Background(), opportunity, definition, banterContext)
-		fmt.Println(message)
-		if err := discordClient.Send(message); err != nil {
-			return err
-		}
-	}
-
-	if err := snapshot.SaveStandings(snapshotPath, standings); err != nil {
-		return err
-	}
-	if err := snapshot.SaveMatches(matchesSnapshotPath, matches); err != nil {
-		return err
-	}
-	if err := snapshot.SaveRivalries(rivalriesSnapshotPath, updatedRivalries); err != nil {
-		return err
-	}
-	if err := snapshot.SaveForecasts(forecastsSnapshotPath, allForecasts); err != nil {
-		return err
-	}
-	return nil
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return runtime.Run(ctx)
 }
