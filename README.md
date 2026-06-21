@@ -43,29 +43,4 @@ The process handles `SIGINT` and `SIGTERM`, stops its scheduler, and exits clean
 
 ## Raspberry Pi
 
-Build directly on the Raspberry Pi, or cross-compile for a 64-bit Raspberry Pi:
-
-```sh
-GOOS=linux GOARCH=arm64 go build -o banter-engine ./cmd/banter-engine
-```
-
-Place the binary, the `resources` directory, and a writable snapshot directory under `/opt/banter-engine`. A minimal systemd unit is:
-
-```ini
-[Unit]
-Description=Banter Engine
-After=network-online.target
-
-[Service]
-Type=simple
-WorkingDirectory=/opt/banter-engine
-ExecStart=/opt/banter-engine/banter-engine run
-EnvironmentFile=/etc/banter-engine.env
-Restart=on-failure
-User=banter-engine
-
-[Install]
-WantedBy=multi-user.target
-```
-
-After creating `/etc/banter-engine.env`, enable the service with `sudo systemctl enable --now banter-engine`. `systemctl stop banter-engine` uses the graceful `SIGTERM` shutdown path.
+Use the production unit in `deploy/banter-engine.service` and follow the complete [Raspberry Pi deployment and operations guide](docs/raspberry-deployment.md). It covers installation, secrets, boot startup, graceful shutdown, automatic restart, persistent snapshots, network recovery, upgrades, and rollback.

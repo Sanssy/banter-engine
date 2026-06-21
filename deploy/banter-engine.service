@@ -1,0 +1,28 @@
+[Unit]
+Description=Banter Engine
+Documentation=https://github.com/Sanssy/banter-engine
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=banter-engine
+Group=banter-engine
+WorkingDirectory=/opt/banter-engine
+EnvironmentFile=/etc/banter-engine.env
+ExecStart=/opt/banter-engine/banter-engine run
+Restart=on-failure
+RestartSec=10s
+TimeoutStopSec=30s
+KillSignal=SIGTERM
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/banter-engine
+
+[Install]
+WantedBy=multi-user.target
