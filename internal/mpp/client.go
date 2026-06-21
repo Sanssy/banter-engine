@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/matches"
 	"github.com/DSanoussy/banter-engine/internal/model"
 )
@@ -96,6 +97,35 @@ func (c *Client) GetMatches() ([]matches.Match, error) {
 	return result, nil
 }
 
+func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]forecasts.Forecast, error) {
+	path := fmt.Sprintf(
+		"/user-match-forecasts/contest/%s/match/%s",
+		url.PathEscape(challengeID),
+		url.PathEscape(match.MatchID),
+	)
+
+	var apiForecasts map[string]forecastDTO
+	if err := c.get(path, nil, &apiForecasts); err != nil {
+		return nil, fmt.Errorf("fetch forecasts: %w", err)
+	}
+
+	result := make([]forecasts.Forecast, 0, len(apiForecasts))
+	for userID, forecast := range apiForecasts {
+		result = append(result, forecasts.Forecast{
+			UserID:  userID,
+			MatchID: match.MatchID,
+			Prediction: matches.Score{
+				Home: forecast.HomeScore,
+				Away: forecast.AwayScore,
+			},
+			Result: match.Score,
+			Points: forecast.Points.Total,
+		})
+	}
+
+	return result, nil
+}
+
 func (c *Client) get(path string, query url.Values, target any) error {
 	endpoint, err := url.Parse(baseURL + path)
 	if err != nil {
@@ -167,6 +197,14 @@ type predictionStatsDTO struct {
 	Home float64 `json:"home"`
 	Draw float64 `json:"draw"`
 	Away float64 `json:"away"`
+}
+
+type forecastDTO struct {
+	HomeScore int `json:"homeScore"`
+	AwayScore int `json:"awayScore"`
+	Points    struct {
+		Total int `json:"total"`
+	} `json:"points"`
 }
 
 type clubsResponse struct {

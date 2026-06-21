@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DSanoussy/banter-engine/internal/forecasts"
 	"github.com/DSanoussy/banter-engine/internal/matches"
 )
 
@@ -76,6 +77,49 @@ func TestGetMatches(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("GetMatches() = %#v, want %#v", got, want)
+	}
+}
+
+func TestGetForecasts(t *testing.T) {
+	client := NewClient("test-token")
+	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		wantPath := "/user-match-forecasts/contest/challenge-1/match/match-1"
+		if req.URL.Path != wantPath {
+			t.Fatalf("request path = %q, want %q", req.URL.Path, wantPath)
+		}
+
+		body := `{
+			"user-1": {
+				"homeScore": 2,
+				"awayScore": 1,
+				"points": {"base": 3, "exact": 2, "total": 5}
+			}
+		}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Body:       io.NopCloser(strings.NewReader(body)),
+			Header:     make(http.Header),
+		}, nil
+	})
+
+	match := matches.Match{MatchID: "match-1", Score: matches.Score{Home: 2, Away: 1}}
+	want := []forecasts.Forecast{
+		{
+			UserID:     "user-1",
+			MatchID:    "match-1",
+			Prediction: matches.Score{Home: 2, Away: 1},
+			Result:     matches.Score{Home: 2, Away: 1},
+			Points:     5,
+		},
+	}
+
+	got, err := client.GetForecasts("challenge-1", match)
+	if err != nil {
+		t.Fatalf("GetForecasts() error = %v", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetForecasts() = %#v, want %#v", got, want)
 	}
 }
 

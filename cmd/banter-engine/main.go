@@ -41,6 +41,14 @@ func main() {
 	}
 	for _, match := range matches {
 		fmt.Printf("%s %d-%d %s (%s)\n", match.HomeTeam, match.Score.Home, match.Score.Away, match.AwayTeam, match.Status)
+
+		forecasts, err := client.GetForecasts(challengeID, match)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, forecast := range forecasts {
+			fmt.Printf("  %s: %d-%d (%d points)\n", forecast.UserID, forecast.Prediction.Home, forecast.Prediction.Away, forecast.Points)
+		}
 	}
 
 	for _, opportunity := range opportunities.Detect(previousStandings, standings) {
