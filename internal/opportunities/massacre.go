@@ -3,7 +3,7 @@ package opportunities
 import (
 	"fmt"
 
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 func detectMassFailures(match matches.Match) []Opportunity {

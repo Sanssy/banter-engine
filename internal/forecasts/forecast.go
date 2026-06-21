@@ -3,7 +3,7 @@ package forecasts
 import (
 	"time"
 
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 type Forecast struct {

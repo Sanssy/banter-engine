@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DSanoussy/banter-engine/internal/config"
-	"github.com/DSanoussy/banter-engine/internal/logging"
+	"github.com/Sanssy/banter-engine/internal/config"
+	"github.com/Sanssy/banter-engine/internal/logging"
 )
 
 func TestRunStopsWhenContextIsCanceled(t *testing.T) {

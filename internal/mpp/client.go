@@ -8,9 +8,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	"github.com/DSanoussy/banter-engine/internal/matches"
-	"github.com/DSanoussy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/model"
 )
 
 const baseURL = "https://api.mpp.football"

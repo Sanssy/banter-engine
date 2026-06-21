@@ -1,8 +1,8 @@
 package opportunities
 
 import (
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 const (

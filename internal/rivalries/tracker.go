@@ -3,8 +3,8 @@ package rivalries
 import (
 	"sort"
 
-	"github.com/DSanoussy/banter-engine/internal/model"
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
+	"github.com/Sanssy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
 
 const rivalryThreshold = 3

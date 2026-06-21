@@ -1,6 +1,6 @@
 package opportunities
 
-import "github.com/DSanoussy/banter-engine/internal/model"
+import "github.com/Sanssy/banter-engine/internal/model"
 
 func Detect(previous, current []model.Standing) []Opportunity {
 	if len(previous) == 0 || len(current) == 0 {

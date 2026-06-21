@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
 )
 
 func TestDetectStreaks(t *testing.T) {

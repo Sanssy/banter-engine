@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 const crowdFavoriteThreshold = 0.60

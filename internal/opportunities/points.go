@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
 )
 
 const pointExplosionThreshold = 5

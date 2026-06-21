@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	"github.com/DSanoussy/banter-engine/internal/matches"
-	"github.com/DSanoussy/banter-engine/internal/model"
-	"github.com/DSanoussy/banter-engine/internal/rivalries"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/rivalries"
 )
 
 func TestSaveAndLoadStandings(t *testing.T) {

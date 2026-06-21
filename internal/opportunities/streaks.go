@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
 )
 
 const minimumStreakLength = 5

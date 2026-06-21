@@ -3,8 +3,8 @@ package opportunities
 import (
 	"fmt"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 func detectProphets(match matches.Match, matchForecasts []forecasts.Forecast) []Opportunity {

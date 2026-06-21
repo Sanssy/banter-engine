@@ -3,7 +3,7 @@ package opportunities
 import (
 	"strconv"
 
-	"github.com/DSanoussy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/model"
 )
 
 const (

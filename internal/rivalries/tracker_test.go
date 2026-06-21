@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/model"
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
+	"github.com/Sanssy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
 
 func TestUpdateTracksHeadToHeadWithoutCountingUnchangedStandings(t *testing.T) {

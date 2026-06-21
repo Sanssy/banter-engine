@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
 )
 
 func TestCalculateAndDetectPointImpacts(t *testing.T) {

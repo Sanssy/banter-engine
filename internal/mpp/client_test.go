@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 func TestGetMatches(t *testing.T) {

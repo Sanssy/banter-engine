@@ -3,8 +3,8 @@ package banter
 import (
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/catalog"
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
+	"github.com/Sanssy/banter-engine/internal/catalog"
+	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
 
 func TestGenerateRankingOvertake(t *testing.T) {

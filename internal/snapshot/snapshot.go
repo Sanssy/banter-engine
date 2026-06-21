@@ -7,10 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/DSanoussy/banter-engine/internal/forecasts"
-	"github.com/DSanoussy/banter-engine/internal/matches"
-	"github.com/DSanoussy/banter-engine/internal/model"
-	"github.com/DSanoussy/banter-engine/internal/rivalries"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/model"
+	"github.com/Sanssy/banter-engine/internal/rivalries"
 )
 
 func SaveStandings(path string, standings []model.Standing) error {

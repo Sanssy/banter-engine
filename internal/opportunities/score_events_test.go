@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/matches"
+	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 func TestDetectScoreEventsDetectsEqualizer(t *testing.T) {

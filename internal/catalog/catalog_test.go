@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DSanoussy/banter-engine/internal/opportunities"
+	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
 
 func TestLoadCatalogLoadsDefinitiveCatalog(t *testing.T) {
