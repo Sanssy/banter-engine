@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/DSanoussy/banter-engine/internal/contextbuilder"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 )
 
@@ -21,8 +22,16 @@ func NewGenerator(provider Provider) *Generator {
 }
 
 func (g *Generator) Generate(ctx context.Context, op opportunities.Opportunity) string {
+	return g.GenerateWithContext(ctx, op, contextbuilder.Context{})
+}
+
+func (g *Generator) GenerateWithContext(
+	ctx context.Context,
+	op opportunities.Opportunity,
+	banterContext contextbuilder.Context,
+) string {
 	if g.provider != nil {
-		message, err := g.provider.Generate(ctx, opportunityPrompt(op))
+		message, err := g.provider.Generate(ctx, opportunityPrompt(op, banterContext))
 		if err == nil && strings.TrimSpace(message) != "" {
 			return strings.TrimSpace(message)
 		}
@@ -31,11 +40,16 @@ func (g *Generator) Generate(ctx context.Context, op opportunities.Opportunity) 
 	return Generate(op)
 }
 
-func opportunityPrompt(op opportunities.Opportunity) string {
+func opportunityPrompt(op opportunities.Opportunity, banterContext contextbuilder.Context) string {
+	summary, err := banterContext.Summary()
+	if err != nil {
+		summary = "{}"
+	}
 	return fmt.Sprintf(
-		"Rédige un message de banter footballistique court en français. Type: %s. Acteur: %s. Cible: %s.",
+		"Rédige un message de banter footballistique court en français. Type: %s. Acteur: %s. Cible: %s. Contexte: %s.",
 		op.Type,
 		op.Actor,
 		op.Target,
+		summary,
 	)
 }

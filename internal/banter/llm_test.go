@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DSanoussy/banter-engine/internal/contextbuilder"
+	"github.com/DSanoussy/banter-engine/internal/model"
 	"github.com/DSanoussy/banter-engine/internal/opportunities"
 )
 
@@ -25,6 +27,27 @@ func TestGeneratorUsesProvider(t *testing.T) {
 	for _, value := range []string{opportunity.Type, opportunity.Actor, opportunity.Target} {
 		if !strings.Contains(provider.prompt, value) {
 			t.Fatalf("prompt %q does not contain %q", provider.prompt, value)
+		}
+	}
+}
+
+func TestGeneratorIncludesStructuredContext(t *testing.T) {
+	provider := &fakeProvider{message: "Message contextuel."}
+	generator := NewGenerator(provider)
+	opportunity := opportunities.Opportunity{Type: opportunities.EnteredTop3, Actor: "Julien"}
+	banterContext := contextbuilder.Build(
+		[]model.Standing{{UserID: "user-1", Name: "Julien", Rank: 3, Points: 100}},
+		nil,
+		nil,
+		[]opportunities.Opportunity{opportunity},
+	)
+
+	if got := generator.GenerateWithContext(context.Background(), opportunity, banterContext); got != "Message contextuel." {
+		t.Fatalf("GenerateWithContext() = %q", got)
+	}
+	for _, value := range []string{"Julien", "standings", opportunities.EnteredTop3} {
+		if !strings.Contains(provider.prompt, value) {
+			t.Fatalf("prompt %q does not contain context value %q", provider.prompt, value)
 		}
 	}
 }
