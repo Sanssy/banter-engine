@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"time"
 
 	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/logging"
 	"github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/model"
 )
@@ -19,6 +21,7 @@ const baseURL = "https://api.mpp.football"
 type Client struct {
 	token      string
 	httpClient *http.Client
+	logger     *logging.Logger
 }
 
 func NewClient(token string) *Client {
@@ -27,6 +30,7 @@ func NewClient(token string) *Client {
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
+		logger: logging.New(os.Stderr, "mpp"),
 	}
 }
 
@@ -53,8 +57,11 @@ func (c *Client) GetStandings(challengeID string) ([]model.Standing, error) {
 }
 
 func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
+	c.logger.Info("match retrieval challenge_id=%s", challengeID)
+
 	var challenge challengeDTO
 	challengePath := "/challenge/" + url.PathEscape(challengeID)
+	c.logMatchRoute(http.MethodGet, challengePath)
 	if err := c.get(challengePath, nil, &challenge); err != nil {
 		return nil, fmt.Errorf("fetch challenge: %w", err)
 	}
@@ -62,9 +69,11 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 	if championshipID <= 0 {
 		return nil, fmt.Errorf("challenge %q has no championship", challengeID)
 	}
+	c.logger.Info("match retrieval championship_id=%d", championshipID)
 
 	calendarPath := fmt.Sprintf("/championship-calendar/%d/nearest-game-weeks", championshipID)
 	var calendar nearestGameWeeksResponse
+	c.logMatchRoute(http.MethodGet, calendarPath)
 	if err := c.get(calendarPath, nil, &calendar); err != nil {
 		return nil, fmt.Errorf("fetch nearest game weeks: %w", err)
 	}
@@ -72,26 +81,46 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 	if !found {
 		return nil, fmt.Errorf("championship %d has no current game week", championshipID)
 	}
+	c.logger.Info(
+		"match retrieval game_week=%d start=%s end=%s match_ids_count=%d match_ids_preview=%v",
+		gameWeek.Number,
+		gameWeek.Start.Format(time.RFC3339),
+		gameWeek.End.Format(time.RFC3339),
+		len(gameWeek.MatchIDs),
+		previewStrings(gameWeek.MatchIDs, 10),
+	)
 	if len(gameWeek.MatchIDs) == 0 {
 		return []matches.Match{}, nil
 	}
 
 	var apiMatches map[string]*matchDTO
 	body := matchSummariesRequest{MatchIDs: gameWeek.MatchIDs}
+	c.logMatchRoute(http.MethodPost, "/championship-match/summaries")
 	if err := c.post("/championship-match/summaries", body, &apiMatches); err != nil {
 		return nil, fmt.Errorf("fetch match summaries: %w", err)
 	}
 
 	var apiClubs clubsResponse
+	c.logMatchRoute(http.MethodGet, "/championship-clubs")
 	if err := c.get("/championship-clubs", nil, &apiClubs); err != nil {
 		return nil, fmt.Errorf("fetch clubs: %w", err)
 	}
 
 	result := make([]matches.Match, 0, len(gameWeek.MatchIDs))
-	for _, id := range gameWeek.MatchIDs {
+	for index, id := range gameWeek.MatchIDs {
 		match := apiMatches[id]
 		if match == nil {
+			if index < 5 {
+				c.logger.Info("match retrieval summary requested_match_id=%s summary=nil", id)
+			}
 			continue
+		}
+		if index < 5 {
+			c.logger.Info(
+				"match retrieval summary requested_match_id=%s summary_match_id=%s",
+				id,
+				match.MatchID,
+			)
 		}
 
 		matchID := match.MatchID
@@ -127,8 +156,32 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 		}
 		return result[i].Date.Before(result[j].Date)
 	})
+	for index, match := range result {
+		if index >= 5 {
+			break
+		}
+		c.logger.Info(
+			"match retrieval resolved index=%d match_id=%s home_team=%s away_team=%s date=%s",
+			index,
+			match.MatchID,
+			match.HomeTeam,
+			match.AwayTeam,
+			match.Date.Format(time.RFC3339),
+		)
+	}
 
 	return result, nil
+}
+
+func (c *Client) logMatchRoute(method, path string) {
+	c.logger.Info("match retrieval route=%s %s", method, path)
+}
+
+func previewStrings(values []string, limit int) []string {
+	if len(values) <= limit {
+		return values
+	}
+	return values[:limit]
 }
 
 func (c *Client) GetForecasts(challengeID string, match matches.Match) ([]forecasts.Forecast, error) {

@@ -1,6 +1,7 @@
 package mpp
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -10,11 +11,14 @@ import (
 	"time"
 
 	"github.com/Sanssy/banter-engine/internal/forecasts"
+	"github.com/Sanssy/banter-engine/internal/logging"
 	"github.com/Sanssy/banter-engine/internal/matches"
 )
 
 func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 	client := NewClient("test-token")
+	var logOutput bytes.Buffer
+	client.logger = logging.New(&logOutput, "mpp")
 	var requestedPaths []string
 	client.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		requestedPaths = append(requestedPaths, req.URL.Path)
@@ -119,6 +123,23 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 	}
 	if len(requestedPaths) != 4 {
 		t.Fatalf("requested paths = %#v, want challenge-scoped retrieval only", requestedPaths)
+	}
+	for _, expected := range []string{
+		"challenge_id=challenge-1",
+		"route=GET /challenge/challenge-1",
+		"championship_id=8",
+		"route=GET /championship-calendar/8/nearest-game-weeks",
+		"game_week=2",
+		"match_ids_count=1",
+		"match_ids_preview=[world-cup-match]",
+		"route=POST /championship-match/summaries",
+		"requested_match_id=world-cup-match summary_match_id=world-cup-match",
+		"route=GET /championship-clubs",
+		"match_id=world-cup-match home_team=Canada away_team=Qatar date=2026-06-21T16:00:00Z",
+	} {
+		if !strings.Contains(logOutput.String(), expected) {
+			t.Errorf("diagnostic log does not contain %q:\n%s", expected, logOutput.String())
+		}
 	}
 }
 
