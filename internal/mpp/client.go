@@ -115,9 +115,15 @@ func (c *Client) GetMatches(challengeID string) ([]matches.Match, error) {
 
 	var apiClubs clubsResponse
 	c.logMatchRoute(http.MethodGet, "/championship-clubs")
-	if err := c.get("/championship-clubs", nil, &apiClubs); err != nil {
+	clubsData, err := c.getRaw("/championship-clubs")
+	if err != nil {
 		return nil, fmt.Errorf("fetch clubs: %w", err)
 	}
+	c.logger.Info("club reference response body_preview=%s", previewBytes(clubsData, 2048))
+	if err := json.Unmarshal(clubsData, &apiClubs); err != nil {
+		return nil, fmt.Errorf("decode clubs: %w", err)
+	}
+	c.logger.Info("club reference decoded clubs_count=%d", len(apiClubs.ChampionshipClubs))
 
 	result := make([]matches.Match, 0, len(gameWeek.MatchIDs))
 	for index, id := range gameWeek.MatchIDs {
@@ -506,14 +512,27 @@ type clubsResponse struct {
 	ChampionshipClubs map[string]clubDTO `json:"championshipClubs"`
 }
 
+func (r *clubsResponse) UnmarshalJSON(data []byte) error {
+	var root map[string]json.RawMessage
+	if err := json.Unmarshal(data, &root); err != nil {
+		return err
+	}
+	if wrapped, found := root["championshipClubs"]; found {
+		return json.Unmarshal(wrapped, &r.ChampionshipClubs)
+	}
+	return json.Unmarshal(data, &r.ChampionshipClubs)
+}
+
 type clubDTO struct {
 	Name      map[string]string `json:"name"`
 	ShortName string            `json:"shortName"`
 }
 
 func clubName(club clubDTO, fallback string) string {
-	if name := club.Name["fr-FR"]; name != "" {
-		return name
+	for _, locale := range []string{"fr-FR", "fr", "en-GB", "en"} {
+		if name := club.Name[locale]; name != "" {
+			return name
+		}
 	}
 	if club.ShortName != "" {
 		return club.ShortName

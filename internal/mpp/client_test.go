@@ -61,25 +61,23 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 					"gameWeekNumber": 2,
 					"date": "2026-06-21T16:00:00Z",
 					"period": "preMatch",
-					"home": {"clubId": "canada", "score": 0},
-					"away": {"clubId": "qatar", "score": 0},
+					"home": {"clubId": "mpp_championship_club_367", "score": 0},
+					"away": {"clubId": "mpp_championship_club_522", "score": 0},
 					"quotations": {"home": 125, "draw": 310, "away": 240},
 					"stats": {"bets": {"home": 0.5, "draw": 0.2, "away": 0.3}}
 				},
 				"club-match": {
 					"matchId": "club-match",
-					"home": {"clubId": "saint-etienne"},
-					"away": {"clubId": "guingamp"}
+					"home": {"clubId": "mpp_championship_club_152"},
+					"away": {"clubId": "mpp_championship_club_1430"}
 				}
 			}`
 		case "/championship-clubs":
 			body = `{
-				"championshipClubs": {
-					"canada": {"name": {"fr-FR": "Canada"}},
-					"qatar": {"shortName": "Qatar"},
-					"saint-etienne": {"shortName": "AS Saint-Étienne"},
-					"guingamp": {"shortName": "Guingamp"}
-				}
+				"mpp_championship_club_367": {"name": {"fr-FR": "Canada"}},
+				"mpp_championship_club_522": {"shortName": "Qatar"},
+				"mpp_championship_club_152": {"shortName": "AS Saint-Étienne"},
+				"mpp_championship_club_1430": {"shortName": "Guingamp"}
 			}`
 		default:
 			t.Fatalf("unexpected request path %q", req.URL.Path)
@@ -136,11 +134,23 @@ func TestGetMatchesUsesChallengeCurrentGameWeek(t *testing.T) {
 		"first_summary requested_match_id=world-cup-match summary_match_id=world-cup-match",
 		"requested_match_id=world-cup-match summary_match_id=world-cup-match",
 		"route=GET /championship-clubs",
+		"club reference decoded clubs_count=4",
 		"match_id=world-cup-match home_team=Canada away_team=Qatar date=2026-06-21T16:00:00Z",
 	} {
 		if !strings.Contains(logOutput.String(), expected) {
 			t.Errorf("diagnostic log does not contain %q:\n%s", expected, logOutput.String())
 		}
+	}
+}
+
+func TestClubsResponseAcceptsWrappedReference(t *testing.T) {
+	data := []byte(`{"championshipClubs":{"club-1":{"name":{"fr-FR":"France"}}}}`)
+	var response clubsResponse
+	if err := json.Unmarshal(data, &response); err != nil {
+		t.Fatalf("Unmarshal() error = %v", err)
+	}
+	if got := clubName(response.ChampionshipClubs["club-1"], "club-1"); got != "France" {
+		t.Fatalf("clubName() = %q, want France", got)
 	}
 }
 
