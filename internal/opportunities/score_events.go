@@ -14,9 +14,10 @@ func detectScoreEvents(previous, current matches.Match) []Opportunity {
 	matchLabel := fmt.Sprintf("%s - %s", current.HomeTeam, current.AwayTeam)
 	scoringTeam := scoreChangeActor(previous, current)
 	detected := []Opportunity{{
-		Type:   GoalSwing,
-		Actor:  scoringTeam,
-		Target: fmt.Sprintf("%s (%d-%d)", matchLabel, current.Score.Home, current.Score.Away),
+		Type:    GoalSwing,
+		Actor:   scoringTeam,
+		Target:  fmt.Sprintf("%s (%d-%d)", matchLabel, current.Score.Home, current.Score.Away),
+		MatchID: current.MatchID,
 	}}
 
 	previousOutcome := scoreOutcome(previous.Score)
@@ -26,16 +27,18 @@ func detectScoreEvents(previous, current matches.Match) []Opportunity {
 	}
 	if currentOutcome == drawOutcome {
 		return append(detected, Opportunity{
-			Type:   EqualizerChaos,
-			Actor:  scoringTeam,
-			Target: matchLabel,
+			Type:    EqualizerChaos,
+			Actor:   scoringTeam,
+			Target:  matchLabel,
+			MatchID: current.MatchID,
 		})
 	}
 	if previousOutcome != drawOutcome {
 		detected = append(detected, Opportunity{
-			Type:   MatchTurnaround,
-			Actor:  outcomeName(current, currentOutcome),
-			Target: outcomeName(previous, previousOutcome),
+			Type:    MatchTurnaround,
+			Actor:   outcomeName(current, currentOutcome),
+			Target:  outcomeName(previous, previousOutcome),
+			MatchID: current.MatchID,
 		})
 	}
 	return detected

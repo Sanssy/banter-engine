@@ -33,11 +33,11 @@ func DetectStreaks(previous, current []forecasts.Forecast) []Opportunity {
 			Target: strconv.Itoa(currentStreak.length),
 		})
 	}
-	return detected
+	return EnsureIdentities(detected)
 }
 
 type streak struct {
-	kind     string
+	kind     OpportunityType
 	length   int
 	userName string
 }
@@ -63,7 +63,7 @@ func streaksByUser(history []forecasts.Forecast) map[string]streak {
 	return result
 }
 
-func activeStreak(history []forecasts.Forecast) (string, int) {
+func activeStreak(history []forecasts.Forecast) (OpportunityType, int) {
 	if len(history) == 0 {
 		return "", 0
 	}

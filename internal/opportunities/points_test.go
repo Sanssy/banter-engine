@@ -27,11 +27,11 @@ func TestCalculateAndDetectPointImpacts(t *testing.T) {
 		t.Fatalf("calculatePointImpacts() = %#v, want %#v", got, wantImpacts)
 	}
 
-	wantOpportunities := []Opportunity{
-		{Type: BiggestWinner, Actor: "Alice", Target: "+7"},
-		{Type: BiggestLoser, Actor: "Bob", Target: "-5"},
-		{Type: PointExplosion, Actor: "Alice", Target: "+7"},
-	}
+	wantOpportunities := EnsureIdentities([]Opportunity{
+		{Type: BiggestWinner, Actor: "Alice", Target: "+7", MatchID: "match-1"},
+		{Type: BiggestLoser, Actor: "Bob", Target: "-5", MatchID: "match-1"},
+		{Type: PointExplosion, Actor: "Alice", Target: "+7", MatchID: "match-1"},
+	})
 	if got := DetectPointImpacts(previous, current); !reflect.DeepEqual(got, wantOpportunities) {
 		t.Fatalf("DetectPointImpacts() = %#v, want %#v", got, wantOpportunities)
 	}

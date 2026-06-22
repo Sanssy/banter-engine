@@ -21,16 +21,17 @@ func DetectLiveUpdates(previous, current []matches.Match) []Opportunity {
 
 		label := fmt.Sprintf("%s - %s", match.HomeTeam, match.AwayTeam)
 		if !isLiveStatus(old.Status) && isLiveStatus(match.Status) {
-			detected = append(detected, Opportunity{Type: MatchStarted, Actor: label})
+			detected = append(detected, Opportunity{Type: MatchStarted, Actor: label, MatchID: match.MatchID})
 		}
 		if old.Status != "fullTime" && match.Status == "fullTime" {
-			detected = append(detected, Opportunity{Type: MatchEnded, Actor: label})
+			detected = append(detected, Opportunity{Type: MatchEnded, Actor: label, MatchID: match.MatchID})
 		}
 		if old.Score != match.Score {
 			detected = append(detected, Opportunity{
-				Type:   ScoreChanged,
-				Actor:  label,
-				Target: fmt.Sprintf("%d-%d", match.Score.Home, match.Score.Away),
+				Type:    ScoreChanged,
+				Actor:   label,
+				Target:  fmt.Sprintf("%d-%d", match.Score.Home, match.Score.Away),
+				MatchID: match.MatchID,
 			})
 			detected = append(detected, detectScoreEvents(old, match)...)
 		}
@@ -47,14 +48,16 @@ func DetectLiveUpdates(previous, current []matches.Match) []Opportunity {
 				continue
 			}
 			detected = append(detected, Opportunity{
-				Type:   ImportantMatchEvent,
-				Actor:  label,
-				Target: fmt.Sprintf("%s %s", event.Type, event.Time),
+				Type:    ImportantMatchEvent,
+				Actor:   label,
+				Target:  fmt.Sprintf("%s %s", event.Type, event.Time),
+				MatchID: match.MatchID,
+				EventID: eventKey(event),
 			})
 		}
 	}
 
-	return detected
+	return EnsureIdentities(detected)
 }
 
 func isLiveStatus(status string) bool {

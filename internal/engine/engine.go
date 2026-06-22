@@ -138,6 +138,7 @@ func (e *Engine) runOnce() error {
 	if err != nil {
 		return err
 	}
+	nightBuffer = opportunities.EnsureIdentities(nightBuffer)
 	nightSummaryDate, err := snapshot.LoadNightSummaryDate(e.snapshotPath("night_summary_date.txt"))
 	if err != nil {
 		return err
@@ -206,6 +207,7 @@ func (e *Engine) runOnce() error {
 	for i := range detected {
 		detected[i].Actor = e.resolver.Resolve(detected[i].Actor)
 		detected[i].Target = e.resolver.Resolve(detected[i].Target)
+		detected[i] = opportunities.EnsureIdentity(detected[i])
 	}
 
 	e.logger.Info("run completed with %d opportunities", len(detected))
@@ -266,11 +268,11 @@ func (e *Engine) runOnce() error {
 func (e *Engine) publishLiveDigest(detected []opportunities.Opportunity) error {
 	selected := notify.SelectTop(detected, e.catalog, notify.MaxNotificationsPerRun)
 	for _, opportunity := range selected {
-		definition, found := e.catalog.FindByID(opportunity.Type)
+		definition, found := e.catalog.FindByID(string(opportunity.Type))
 		if !found {
 			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
 		}
-		angle := narrative.ForOpportunity(opportunity.Type)
+		angle := narrative.ForOpportunity(string(opportunity.Type))
 		if angle == "" {
 			return fmt.Errorf("opportunity %q has no narrative angle", opportunity.Type)
 		}

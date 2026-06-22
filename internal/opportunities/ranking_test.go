@@ -22,13 +22,13 @@ func TestDetectReturnsAllSupportedOpportunities(t *testing.T) {
 		{UserID: "william", Name: "William", Rank: 4, Points: 75},
 		{UserID: "julien", Name: "Julien", Rank: 5, Points: 55},
 	}
-	want := []Opportunity{
+	want := EnsureIdentities([]Opportunity{
 		{Type: RankingOvertake, Actor: "Sanssy", Target: "Killian"},
 		{Type: RankingOvertake, Actor: "Sanssy", Target: "William"},
 		{Type: EnteredTop3, Actor: "Sanssy"},
 		{Type: ExitedTop3, Actor: "William"},
 		{Type: LeaderUnderPressure, Actor: "Amine", Target: "Sanssy"},
-	}
+	})
 
 	got := Detect(previous, current)
 	if !reflect.DeepEqual(got, want) {

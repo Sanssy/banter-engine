@@ -19,19 +19,20 @@ type scoredOpportunity struct {
 // (Type, Actor) when Actor is set, (Type, Target) when only Target is set, Type alone otherwise.
 func dedupKey(op opportunities.Opportunity) string {
 	if op.Actor != "" {
-		return op.Type + "\x00" + op.Actor
+		return string(op.Type) + "\x00" + op.Actor
 	}
 	if op.Target != "" {
-		return op.Type + "\x00" + op.Target
+		return string(op.Type) + "\x00" + op.Target
 	}
-	return op.Type
+	return string(op.Type)
 }
 
 // SelectTop returns at most n opportunities, deduplicated by (Type, Actor/Target), ordered by catalog severity descending.
 func SelectTop(ops []opportunities.Opportunity, cat *catalog.Catalog, n int) []opportunities.Opportunity {
 	scored := make([]scoredOpportunity, 0, len(ops))
 	for _, op := range ops {
-		def, found := cat.FindByID(op.Type)
+		op = opportunities.EnsureIdentity(op)
+		def, found := cat.FindByID(string(op.Type))
 		if !found {
 			continue
 		}

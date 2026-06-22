@@ -43,9 +43,9 @@ func TestUpdateDetectsRevengeNemesisAndDominance(t *testing.T) {
 		{UserID: "a", Name: "Amine", Rank: 2, Points: 10},
 	}
 	state, detected := Update(revengeStandings, state)
-	wantRevenge := []opportunities.Opportunity{
+	wantRevenge := opportunities.EnsureIdentities([]opportunities.Opportunity{
 		{Type: opportunities.Revenge, Actor: "Benoit", Target: "Amine"},
-	}
+	})
 	if !reflect.DeepEqual(detected, wantRevenge) {
 		t.Fatalf("revenge Update() = %#v, want %#v", detected, wantRevenge)
 	}
@@ -54,18 +54,18 @@ func TestUpdateDetectsRevengeNemesisAndDominance(t *testing.T) {
 		revengeStandings[0].Points = points
 		state, detected = Update(revengeStandings, state)
 	}
-	wantMilestones := []opportunities.Opportunity{
+	wantMilestones := opportunities.EnsureIdentities([]opportunities.Opportunity{
 		{Type: opportunities.Nemesis, Actor: "Benoit", Target: "Amine"},
-	}
+	})
 	if !reflect.DeepEqual(detected, wantMilestones) {
 		t.Fatalf("milestone Update() = %#v, want %#v", detected, wantMilestones)
 	}
 
 	revengeStandings[0].Points = 15
 	_, detected = Update(revengeStandings, state)
-	wantDominance := []opportunities.Opportunity{
+	wantDominance := opportunities.EnsureIdentities([]opportunities.Opportunity{
 		{Type: opportunities.Dominance, Actor: "Benoit", Target: "Amine"},
-	}
+	})
 	if !reflect.DeepEqual(detected, wantDominance) {
 		t.Fatalf("dominance Update() = %#v, want %#v", detected, wantDominance)
 	}

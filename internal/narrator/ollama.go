@@ -134,7 +134,7 @@ func buildDigestPrompt(
 	sb.WriteString("Événements de la nuit :\n")
 
 	for _, op := range selected {
-		def, found := cat.FindByID(op.Type)
+		def, found := cat.FindByID(string(op.Type))
 		if !found {
 			continue
 		}
@@ -160,11 +160,11 @@ func (o *OllamaNarrator) selectDigestExamples(
 	selectedOps := notify.SelectTop(ops, cat, 8)
 	pools := make([][]narrative.Example, 0, len(selectedOps))
 	for _, op := range selectedOps {
-		definition, found := cat.FindByID(op.Type)
+		definition, found := cat.FindByID(string(op.Type))
 		if !found {
 			continue
 		}
-		angle := narrative.ForOpportunity(op.Type)
+		angle := narrative.ForOpportunity(string(op.Type))
 		candidates := o.examples.Select(definition.Category, angle, narrative.MaxExamples)
 		if len(candidates) > 0 {
 			pools = append(pools, candidates)

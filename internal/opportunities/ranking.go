@@ -19,7 +19,7 @@ func Detect(previous, current []model.Standing) []Opportunity {
 		detected = append(detected, opportunity)
 	}
 
-	return detected
+	return EnsureIdentities(detected)
 }
 
 func detectRankingOvertakes(previous, current []model.Standing) []Opportunity {

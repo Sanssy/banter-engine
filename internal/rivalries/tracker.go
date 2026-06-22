@@ -92,7 +92,7 @@ func Update(current []model.Standing, state []Rivalry) ([]Rivalry, []opportuniti
 	sort.Slice(updated, func(i, j int) bool {
 		return pairKey(updated[i].PlayerAID, updated[i].PlayerBID) < pairKey(updated[j].PlayerAID, updated[j].PlayerBID)
 	})
-	return updated, detected
+	return updated, opportunities.EnsureIdentities(detected)
 }
 
 func newRivalry(playerA, playerB model.Standing) Rivalry {

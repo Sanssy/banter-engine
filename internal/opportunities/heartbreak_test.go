@@ -20,9 +20,9 @@ func TestDetectHeartbreaksDetectsLateGoal(t *testing.T) {
 	matchForecasts := []forecasts.Forecast{
 		{UserID: "user-1", Prediction: matches.Score{Home: 1}},
 	}
-	want := []Opportunity{
-		{Type: NinetiethMinuteHeartbreak, Actor: "user-1", Target: "France - Espagne"},
-	}
+	want := EnsureIdentities([]Opportunity{
+		{Type: NinetiethMinuteHeartbreak, Actor: "user-1", Target: "France - Espagne", MatchID: "match-1", EventID: "goal-1"},
+	})
 
 	if got := DetectHeartbreaks(previous, current, matchForecasts); !reflect.DeepEqual(got, want) {
 		t.Fatalf("DetectHeartbreaks() = %#v, want %#v", got, want)
@@ -41,7 +41,7 @@ func TestDetectHeartbreaksDetectsVARVictim(t *testing.T) {
 	matchForecasts := []forecasts.Forecast{
 		{UserID: "user-1", Prediction: matches.Score{Home: 1, Away: 1}},
 	}
-	want := []Opportunity{{Type: VARVictim, Actor: "user-1", Target: "France - Espagne"}}
+	want := EnsureIdentities([]Opportunity{{Type: VARVictim, Actor: "user-1", Target: "France - Espagne", MatchID: "match-1", EventID: "var-1"}})
 
 	if got := DetectHeartbreaks(previous, current, matchForecasts); !reflect.DeepEqual(got, want) {
 		t.Fatalf("DetectHeartbreaks() = %#v, want %#v", got, want)
@@ -62,7 +62,7 @@ func TestDetectHeartbreaksDetectsRedCardDisaster(t *testing.T) {
 		{UserID: "user-1", Prediction: matches.Score{Home: 2, Away: 0}},
 		{UserID: "user-2", Prediction: matches.Score{Home: 0, Away: 1}},
 	}
-	want := []Opportunity{{Type: RedCardDisaster, Actor: "user-1", Target: "France - Espagne"}}
+	want := EnsureIdentities([]Opportunity{{Type: RedCardDisaster, Actor: "user-1", Target: "France - Espagne", MatchID: "match-1", EventID: "card-1"}})
 
 	if got := DetectHeartbreaks(previous, current, matchForecasts); !reflect.DeepEqual(got, want) {
 		t.Fatalf("DetectHeartbreaks() = %#v, want %#v", got, want)

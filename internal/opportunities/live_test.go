@@ -29,12 +29,12 @@ func TestDetectLiveUpdates(t *testing.T) {
 			},
 		},
 	}
-	want := []Opportunity{
-		{Type: MatchStarted, Actor: "France - Espagne"},
-		{Type: ScoreChanged, Actor: "France - Espagne", Target: "1-0"},
-		{Type: GoalSwing, Actor: "France", Target: "France - Espagne (1-0)"},
-		{Type: ImportantMatchEvent, Actor: "France - Espagne", Target: "goal 12'"},
-	}
+	want := EnsureIdentities([]Opportunity{
+		{Type: MatchStarted, Actor: "France - Espagne", MatchID: "match-1"},
+		{Type: ScoreChanged, Actor: "France - Espagne", Target: "1-0", MatchID: "match-1"},
+		{Type: GoalSwing, Actor: "France", Target: "France - Espagne (1-0)", MatchID: "match-1"},
+		{Type: ImportantMatchEvent, Actor: "France - Espagne", Target: "goal 12'", MatchID: "match-1", EventID: "event-1"},
+	})
 
 	got := DetectLiveUpdates(previous, current)
 	if !reflect.DeepEqual(got, want) {
@@ -47,7 +47,7 @@ func TestDetectLiveUpdatesDetectsMatchEndWithoutRepeatingEvents(t *testing.T) {
 	previous := []matches.Match{{MatchID: "match-1", HomeTeam: "France", AwayTeam: "Espagne", Status: "secondHalf", Events: []matches.Event{event}}}
 	current := []matches.Match{{MatchID: "match-1", HomeTeam: "France", AwayTeam: "Espagne", Status: "fullTime", Events: []matches.Event{event}}}
 
-	want := []Opportunity{{Type: MatchEnded, Actor: "France - Espagne"}}
+	want := EnsureIdentities([]Opportunity{{Type: MatchEnded, Actor: "France - Espagne", MatchID: "match-1"}})
 	if got := DetectLiveUpdates(previous, current); !reflect.DeepEqual(got, want) {
 		t.Fatalf("DetectLiveUpdates() = %#v, want %#v", got, want)
 	}

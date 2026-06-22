@@ -29,7 +29,7 @@ func TestGeneratedOpportunityUsesResolvedClubName(t *testing.T) {
 		t.Fatal("DetectSurprises() returned no opportunity")
 	}
 
-	message := banter.GenerateWithDefinition(detected[0], catalog.OpportunityDefinition{ID: detected[0].Type})
+	message := banter.GenerateWithDefinition(detected[0], catalog.OpportunityDefinition{ID: string(detected[0].Type)})
 	if !strings.Contains(message, "Argentine") {
 		t.Fatalf("generated message %q does not contain resolved club name", message)
 	}
@@ -54,7 +54,7 @@ func TestGeneratedOpportunityUsesResolvedUserName(t *testing.T) {
 		t.Fatalf("DetectStreaks() returned %d opportunities, want 1", len(detected))
 	}
 
-	message := banter.GenerateWithDefinition(detected[0], catalog.OpportunityDefinition{ID: detected[0].Type})
+	message := banter.GenerateWithDefinition(detected[0], catalog.OpportunityDefinition{ID: string(detected[0].Type)})
 	if !strings.Contains(message, "LeDaveCoinCoin") {
 		t.Fatalf("generated message %q does not contain resolved user name", message)
 	}

@@ -102,7 +102,7 @@ func generate(op opportunities.Opportunity, description string) string {
 		return fmt.Sprintf("🥉 %s met la pression sur %s pour le podium.", op.Actor, op.Target)
 	default:
 		if description == "" {
-			description = op.Type
+			description = string(op.Type)
 		}
 		description = strings.TrimSuffix(description, ".")
 		return fmt.Sprintf("%s: %s -> %s", description, op.Actor, op.Target)

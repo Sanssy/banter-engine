@@ -33,15 +33,15 @@ func TestDetectSurprises(t *testing.T) {
 		{UserID: "user-1", Prediction: matches.Score{Home: 0, Away: 1}},
 		{UserID: "user-2", Prediction: matches.Score{Home: 2, Away: 0}},
 	}
-	want := []Opportunity{
-		{Type: HugeUpset, Actor: "Espagne", Target: "France"},
-		{Type: EveryoneWasWrong, Actor: "France - Espagne"},
-		{Type: PredictionMassacre, Actor: "France - Espagne"},
-		{Type: CrowdFavorite, Actor: "France", Target: "90%"},
-		{Type: PopularMistake, Actor: "France", Target: "France - Espagne"},
-		{Type: TheChosenOne, Actor: "user-1", Target: "France - Espagne"},
-		{Type: AgainstTheCrowd, Actor: "user-1", Target: "France - Espagne"},
-	}
+	want := EnsureIdentities([]Opportunity{
+		{Type: HugeUpset, Actor: "Espagne", Target: "France", MatchID: "match-1"},
+		{Type: EveryoneWasWrong, Actor: "France - Espagne", MatchID: "match-1"},
+		{Type: PredictionMassacre, Actor: "France - Espagne", MatchID: "match-1"},
+		{Type: CrowdFavorite, Actor: "France", Target: "90%", MatchID: "match-1"},
+		{Type: PopularMistake, Actor: "France", Target: "France - Espagne", MatchID: "match-1"},
+		{Type: TheChosenOne, Actor: "user-1", Target: "France - Espagne", MatchID: "match-1"},
+		{Type: AgainstTheCrowd, Actor: "user-1", Target: "France - Espagne", MatchID: "match-1"},
+	})
 
 	got := DetectSurprises(previous, match, matchForecasts)
 	if !reflect.DeepEqual(got, want) {

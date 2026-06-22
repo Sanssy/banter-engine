@@ -36,7 +36,7 @@ func TestGenerateUnknownOpportunity(t *testing.T) {
 func TestGenerateWithDefinitionUsesCatalogDescriptionForFutureType(t *testing.T) {
 	opportunity := opportunities.Opportunity{Type: "FutureOpportunity", Actor: "Sanssy", Target: "William"}
 	definition := catalog.OpportunityDefinition{
-		ID:          opportunity.Type,
+		ID:          string(opportunity.Type),
 		Description: "A future catalog-driven opportunity.",
 	}
 	want := "A future catalog-driven opportunity: Sanssy -> William"

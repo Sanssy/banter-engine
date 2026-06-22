@@ -23,10 +23,10 @@ func TestDetectStreaks(t *testing.T) {
 		{UserID: "cold-user", MatchDate: start.Add(4 * time.Hour), Points: 0},
 		{UserID: "cold-user", MatchDate: start.Add(6 * time.Hour), Points: 0},
 	}
-	want := []Opportunity{
+	want := EnsureIdentities([]Opportunity{
 		{Type: ColdStreak, Actor: "cold-user", Target: "5"},
 		{Type: HotStreak, Actor: "hot-user", Target: "5"},
-	}
+	})
 
 	got := DetectStreaks(nil, history)
 	if !reflect.DeepEqual(got, want) {

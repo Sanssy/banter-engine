@@ -24,10 +24,10 @@ func TestDetectLatePointImpacts(t *testing.T) {
 		{UserID: "user-1", MatchID: "match-1", Points: 0},
 		{UserID: "user-2", MatchID: "match-1", Points: 5},
 	}
-	want := []Opportunity{
-		{Type: AddedTimeDisaster, Actor: "user-1", Target: "France - Espagne"},
-		{Type: LastMinuteHero, Actor: "user-2", Target: "France - Espagne"},
-	}
+	want := EnsureIdentities([]Opportunity{
+		{Type: AddedTimeDisaster, Actor: "user-1", Target: "France - Espagne", MatchID: "match-1", EventID: "goal-1"},
+		{Type: LastMinuteHero, Actor: "user-2", Target: "France - Espagne", MatchID: "match-1", EventID: "goal-1"},
+	})
 
 	got := DetectLatePointImpacts(previousMatch, currentMatch, previousForecasts, currentForecasts)
 	if !reflect.DeepEqual(got, want) {

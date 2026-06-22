@@ -9,7 +9,7 @@ import (
 	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
 
-var opportunityEmoji = map[string]string{
+var opportunityEmoji = map[opportunities.OpportunityType]string{
 	opportunities.BiggestWinner:             "🔥",
 	opportunities.PointExplosion:            "🔥",
 	opportunities.HotStreak:                 "🔥",
@@ -47,7 +47,7 @@ func NightSummary(ops []opportunities.Opportunity, cat *catalog.Catalog) string 
 	var lines []string
 	lines = append(lines, "**Pendant la nuit :**")
 	for _, op := range selected {
-		def, found := cat.FindByID(op.Type)
+		def, found := cat.FindByID(string(op.Type))
 		if !found {
 			continue
 		}
@@ -87,7 +87,7 @@ func LiveDigest(ops []opportunities.Opportunity, cat *catalog.Catalog) string {
 	}
 	items := make([]item, 0, len(selected))
 	for _, op := range selected {
-		def, found := cat.FindByID(op.Type)
+		def, found := cat.FindByID(string(op.Type))
 		if !found {
 			continue
 		}

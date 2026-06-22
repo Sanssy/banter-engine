@@ -26,9 +26,16 @@ func DetectSurprises(previous, current matches.Match, forecasts []forecasts.Fore
 		detected = append(detected, detectCrowdTransitions(previous, current)...)
 		detected = append(detected, detectPopularMistake(current)...)
 		detected = append(detected, detectProphets(current, forecasts)...)
-		return detected
+		return identifyMatchOpportunities(detected, current.MatchID)
 	}
-	return detectCrowdTransitions(previous, current)
+	return identifyMatchOpportunities(detectCrowdTransitions(previous, current), current.MatchID)
+}
+
+func identifyMatchOpportunities(ops []Opportunity, matchID string) []Opportunity {
+	for i := range ops {
+		ops[i].MatchID = matchID
+	}
+	return EnsureIdentities(ops)
 }
 
 func scoreOutcome(score matches.Score) string {

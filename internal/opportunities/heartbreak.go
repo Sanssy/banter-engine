@@ -16,44 +16,50 @@ func DetectHeartbreaks(previous, current matches.Match, forecasts []forecasts.Fo
 			switch {
 			case isLateGoal(event) && forecast.Prediction == previous.Score && forecast.Prediction != current.Score:
 				detected = append(detected, Opportunity{
-					Type:   NinetiethMinuteHeartbreak,
-					Actor:  forecastUserName(forecast),
-					Target: matchLabel,
+					Type:    NinetiethMinuteHeartbreak,
+					Actor:   forecastUserName(forecast),
+					Target:  matchLabel,
+					MatchID: current.MatchID,
+					EventID: eventKey(event),
 				})
 			case isVAR(event) && forecast.Prediction == previous.Score && forecast.Prediction != current.Score:
 				detected = append(detected, Opportunity{
-					Type:   VARVictim,
-					Actor:  forecastUserName(forecast),
-					Target: matchLabel,
+					Type:    VARVictim,
+					Actor:   forecastUserName(forecast),
+					Target:  matchLabel,
+					MatchID: current.MatchID,
+					EventID: eventKey(event),
 				})
 			case isRedCard(event) && predictedWinner(forecast.Prediction) == event.Side:
 				detected = append(detected, Opportunity{
-					Type:   RedCardDisaster,
-					Actor:  forecastUserName(forecast),
-					Target: matchLabel,
+					Type:    RedCardDisaster,
+					Actor:   forecastUserName(forecast),
+					Target:  matchLabel,
+					MatchID: current.MatchID,
+					EventID: eventKey(event),
 				})
 			}
 		}
 	}
-	return detected
+	return EnsureIdentities(detected)
 }
 
 func DetectLatePointImpacts(
 	previousMatch, currentMatch matches.Match,
 	previousForecasts, currentForecasts []forecasts.Forecast,
 ) []Opportunity {
-	var hasLateEvent bool
+	var lateEventID string
 	var hasAddedTimeEvent bool
 	for _, event := range newMatchEvents(previousMatch, currentMatch) {
 		if !isLateEvent(event) {
 			continue
 		}
-		hasLateEvent = true
+		lateEventID = eventKey(event)
 		if strings.Contains(event.Time, "+") {
 			hasAddedTimeEvent = true
 		}
 	}
-	if !hasLateEvent {
+	if lateEventID == "" {
 		return nil
 	}
 
@@ -66,19 +72,23 @@ func DetectLatePointImpacts(
 		switch {
 		case impact.Delta < 0 && hasAddedTimeEvent:
 			detected = append(detected, Opportunity{
-				Type:   AddedTimeDisaster,
-				Actor:  impact.UserName,
-				Target: matchLabel,
+				Type:    AddedTimeDisaster,
+				Actor:   impact.UserName,
+				Target:  matchLabel,
+				MatchID: currentMatch.MatchID,
+				EventID: lateEventID,
 			})
 		case impact.Delta > 0:
 			detected = append(detected, Opportunity{
-				Type:   LastMinuteHero,
-				Actor:  impact.UserName,
-				Target: matchLabel,
+				Type:    LastMinuteHero,
+				Actor:   impact.UserName,
+				Target:  matchLabel,
+				MatchID: currentMatch.MatchID,
+				EventID: lateEventID,
 			})
 		}
 	}
-	return detected
+	return EnsureIdentities(detected)
 }
 
 func newMatchEvents(previous, current matches.Match) []matches.Event {

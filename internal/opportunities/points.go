@@ -69,28 +69,31 @@ func DetectPointImpacts(previous, current []forecasts.Forecast) []Opportunity {
 	var detected []Opportunity
 	if biggestWinner != nil {
 		detected = append(detected, Opportunity{
-			Type:   BiggestWinner,
-			Actor:  biggestWinner.UserName,
-			Target: signedPoints(biggestWinner.Delta),
+			Type:    BiggestWinner,
+			Actor:   biggestWinner.UserName,
+			Target:  signedPoints(biggestWinner.Delta),
+			MatchID: biggestWinner.MatchID,
 		})
 	}
 	if biggestLoser != nil {
 		detected = append(detected, Opportunity{
-			Type:   BiggestLoser,
-			Actor:  biggestLoser.UserName,
-			Target: signedPoints(biggestLoser.Delta),
+			Type:    BiggestLoser,
+			Actor:   biggestLoser.UserName,
+			Target:  signedPoints(biggestLoser.Delta),
+			MatchID: biggestLoser.MatchID,
 		})
 	}
 	for _, impact := range impacts {
 		if impact.Delta >= pointExplosionThreshold {
 			detected = append(detected, Opportunity{
-				Type:   PointExplosion,
-				Actor:  impact.UserName,
-				Target: signedPoints(impact.Delta),
+				Type:    PointExplosion,
+				Actor:   impact.UserName,
+				Target:  signedPoints(impact.Delta),
+				MatchID: impact.MatchID,
 			})
 		}
 	}
-	return detected
+	return EnsureIdentities(detected)
 }
 
 func forecastKey(forecast forecasts.Forecast) string {

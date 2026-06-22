@@ -17,7 +17,7 @@ func TestDeterministicNarratorOutputDoesNotChangeWithAngle(t *testing.T) {
 		Actor:  "Paraguay - Turquie",
 		Target: "92%",
 	}
-	def := catalog.OpportunityDefinition{ID: op.Type, Name: "La foule avait tort"}
+	def := catalog.OpportunityDefinition{ID: string(op.Type), Name: "La foule avait tort"}
 
 	want := banter.GenerateWithDefinition(op, def)
 	got := (DeterministicNarrator{}).Narrate(op, def, narrative.CrowdWrong)
@@ -77,7 +77,7 @@ func TestBuildLivePromptIncludesFactsAndNarrativeAngle(t *testing.T) {
 		Target: "Paraguay - Turquie",
 	}
 	def := catalog.OpportunityDefinition{
-		ID:          op.Type,
+		ID:          string(op.Type),
 		Name:        "Seul contre tous",
 		Description: "Une minorité avait anticipé le résultat.",
 	}
