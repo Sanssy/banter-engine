@@ -110,7 +110,7 @@ func detectLeaderUnderPressure(previous, current []model.Standing) (Opportunity,
 func detectLastPlaceLocked(previous, current []model.Standing) (Opportunity, bool) {
 	previousLast, hasPreviousLast := lastStanding(previous)
 	currentLast, hasCurrentLast := lastStanding(current)
-	if !hasPreviousLast || !hasCurrentLast || previousLast.UserID != currentLast.UserID {
+	if !hasPreviousLast || !hasCurrentLast || previousLast.UserID == currentLast.UserID {
 		return Opportunity{}, false
 	}
 

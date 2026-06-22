@@ -28,12 +28,24 @@ func TestDetectReturnsAllSupportedOpportunities(t *testing.T) {
 		{Type: EnteredTop3, Actor: "Sanssy"},
 		{Type: ExitedTop3, Actor: "William"},
 		{Type: LeaderUnderPressure, Actor: "Amine", Target: "Sanssy"},
-		{Type: LastPlaceLocked, Actor: "Julien"},
 	}
 
 	got := Detect(previous, current)
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Detect() = %#v, want %#v", got, want)
+	}
+}
+
+func TestDetectLastPlaceLockedOnlyWhenLastPlaceChanges(t *testing.T) {
+	previous := []model.Standing{{UserID: "alice", Rank: 1}, {UserID: "bob", Rank: 2}}
+	current := []model.Standing{{UserID: "bob", Rank: 1}, {UserID: "alice", Name: "Alice", Rank: 2}}
+
+	got, ok := detectLastPlaceLocked(previous, current)
+	if !ok || got != (Opportunity{Type: LastPlaceLocked, Actor: "Alice"}) {
+		t.Fatalf("detectLastPlaceLocked() = %#v, %t", got, ok)
+	}
+	if _, ok := detectLastPlaceLocked(current, current); ok {
+		t.Fatal("detectLastPlaceLocked() repeated unchanged last place")
 	}
 }
 

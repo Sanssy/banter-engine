@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Sanssy/banter-engine/internal/config"
+	"github.com/Sanssy/banter-engine/internal/forecasts"
 	"github.com/Sanssy/banter-engine/internal/logging"
 	"github.com/Sanssy/banter-engine/internal/matches"
 )
@@ -51,5 +52,15 @@ func TestPublishDryRunWritesToOutput(t *testing.T) {
 	}
 	if output.String() != "test message\n" {
 		t.Fatalf("publish() output = %q", output.String())
+	}
+}
+
+func TestCompletedForecasts(t *testing.T) {
+	matchData := []matches.Match{{MatchID: "done", Status: "fullTime"}, {MatchID: "next", Status: "preMatch"}}
+	forecastData := []forecasts.Forecast{{MatchID: "done"}, {MatchID: "next"}}
+
+	got := completedForecasts(matchData, forecastData)
+	if len(got) != 1 || got[0].MatchID != "done" {
+		t.Fatalf("completedForecasts() = %#v", got)
 	}
 }

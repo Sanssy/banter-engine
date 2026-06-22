@@ -28,7 +28,7 @@ func TestDetectStreaks(t *testing.T) {
 		{Type: HotStreak, Actor: "hot-user", Target: "5"},
 	}
 
-	got := DetectStreaks(history)
+	got := DetectStreaks(nil, history)
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("DetectStreaks() = %#v, want %#v", got, want)
 	}
@@ -45,7 +45,21 @@ func TestDetectStreaksRequiresFiveConsecutiveResults(t *testing.T) {
 		{UserID: "user-1", Points: 3},
 	}
 
-	if got := DetectStreaks(history); len(got) != 0 {
+	if got := DetectStreaks(nil, history); len(got) != 0 {
 		t.Fatalf("DetectStreaks() returned %d opportunities, want 0", len(got))
+	}
+}
+
+func TestDetectStreaksDoesNotRepeatActiveStreak(t *testing.T) {
+	previous := make([]forecasts.Forecast, 5)
+	current := make([]forecasts.Forecast, 6)
+	for i := range previous {
+		previous[i] = forecasts.Forecast{UserID: "user-1", Points: 3, MatchDate: time.Unix(int64(i), 0)}
+	}
+	for i := range current {
+		current[i] = forecasts.Forecast{UserID: "user-1", Points: 3, MatchDate: time.Unix(int64(i), 0)}
+	}
+	if got := DetectStreaks(previous, current); len(got) != 0 {
+		t.Fatalf("DetectStreaks() returned %d repeated opportunities, want 0", len(got))
 	}
 }

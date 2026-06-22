@@ -177,6 +177,7 @@ func (e *Engine) runOnce() error {
 	)
 
 	var forecastHistory []forecasts.Forecast
+	previousForecastHistory := completedForecasts(previousMatches, previousForecasts)
 	var allForecasts []forecasts.Forecast
 	var detected []opportunities.Opportunity
 	updatedRivalries, rivalryOpportunities := rivalries.Update(standings, rivalryState)
@@ -191,14 +192,14 @@ func (e *Engine) runOnce() error {
 		if match.Status == "fullTime" {
 			forecastHistory = append(forecastHistory, matchForecasts...)
 		}
-		detected = append(detected, opportunities.DetectSurprises(match, matchForecasts)...)
 		if previousMatch, ok := previousMatchesByID[match.MatchID]; ok {
+			detected = append(detected, opportunities.DetectSurprises(previousMatch, match, matchForecasts)...)
 			detected = append(detected, opportunities.DetectHeartbreaks(previousMatch, match, matchForecasts)...)
 			detected = append(detected, opportunities.DetectLatePointImpacts(previousMatch, match, previousForecasts, matchForecasts)...)
 		}
 	}
 	detected = append(detected, opportunities.DetectPointImpacts(previousForecasts, allForecasts)...)
-	detected = append(detected, opportunities.DetectStreaks(forecastHistory)...)
+	detected = append(detected, opportunities.DetectStreaks(previousForecastHistory, forecastHistory)...)
 	detected = append(detected, opportunities.Detect(previousStandings, standings)...)
 
 	// Resolve actor and target names for all detected opportunities.
@@ -298,6 +299,22 @@ func firstMatchID(matches []matchmodel.Match) string {
 		return ""
 	}
 	return matches[0].MatchID
+}
+
+func completedForecasts(matches []matchmodel.Match, all []forecasts.Forecast) []forecasts.Forecast {
+	completedMatchIDs := make(map[string]struct{})
+	for _, match := range matches {
+		if match.Status == "fullTime" {
+			completedMatchIDs[match.MatchID] = struct{}{}
+		}
+	}
+	result := make([]forecasts.Forecast, 0, len(all))
+	for _, forecast := range all {
+		if _, completed := completedMatchIDs[forecast.MatchID]; completed {
+			result = append(result, forecast)
+		}
+	}
+	return result
 }
 
 func sameDay(a, b time.Time) bool {

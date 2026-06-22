@@ -11,24 +11,24 @@ const (
 	awayOutcome = "away"
 )
 
-func DetectSurprises(match matches.Match, forecasts []forecasts.Forecast) []Opportunity {
-	if match.Status != "fullTime" {
-		return nil
-	}
-
-	actualOutcome := scoreOutcome(match.Score)
+func DetectSurprises(previous, current matches.Match, forecasts []forecasts.Forecast) []Opportunity {
 	var detected []Opportunity
-	if favorite, ok := favoriteOutcome(match.Quotations); ok && favorite != actualOutcome {
-		detected = append(detected, Opportunity{
-			Type:   HugeUpset,
-			Actor:  outcomeName(match, actualOutcome),
-			Target: outcomeName(match, favorite),
-		})
+	if previous.Status != "fullTime" && current.Status == "fullTime" {
+		actualOutcome := scoreOutcome(current.Score)
+		if favorite, ok := favoriteOutcome(current.Quotations); ok && favorite != actualOutcome {
+			detected = append(detected, Opportunity{
+				Type:   HugeUpset,
+				Actor:  outcomeName(current, actualOutcome),
+				Target: outcomeName(current, favorite),
+			})
+		}
+		detected = append(detected, detectMassFailures(current)...)
+		detected = append(detected, detectCrowdTransitions(previous, current)...)
+		detected = append(detected, detectPopularMistake(current)...)
+		detected = append(detected, detectProphets(current, forecasts)...)
+		return detected
 	}
-	detected = append(detected, detectMassFailures(match)...)
-	detected = append(detected, detectCrowdIntelligence(match)...)
-	detected = append(detected, detectProphets(match, forecasts)...)
-	return detected
+	return detectCrowdTransitions(previous, current)
 }
 
 func scoreOutcome(score matches.Score) string {

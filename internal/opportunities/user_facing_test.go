@@ -24,7 +24,7 @@ func TestGeneratedOpportunityUsesResolvedClubName(t *testing.T) {
 		},
 		PredictionStats: matches.PredictionStats{Home: 0.95, Draw: 0.03, Away: 0.02},
 	}
-	detected := opportunities.DetectSurprises(match, nil)
+	detected := opportunities.DetectSurprises(matches.Match{Status: "secondHalf"}, match, nil)
 	if len(detected) == 0 {
 		t.Fatal("DetectSurprises() returned no opportunity")
 	}
@@ -49,7 +49,7 @@ func TestGeneratedOpportunityUsesResolvedUserName(t *testing.T) {
 		}
 	}
 
-	detected := opportunities.DetectStreaks(history)
+	detected := opportunities.DetectStreaks(nil, history)
 	if len(detected) != 1 {
 		t.Fatalf("DetectStreaks() returned %d opportunities, want 1", len(detected))
 	}

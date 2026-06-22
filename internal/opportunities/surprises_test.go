@@ -9,6 +9,7 @@ import (
 )
 
 func TestDetectSurprises(t *testing.T) {
+	previous := matches.Match{MatchID: "match-1", Status: "secondHalf"}
 	match := matches.Match{
 		MatchID:  "match-1",
 		HomeTeam: "France",
@@ -26,6 +27,8 @@ func TestDetectSurprises(t *testing.T) {
 			Away: 0.04,
 		},
 	}
+	previous.HomeTeam = match.HomeTeam
+	previous.AwayTeam = match.AwayTeam
 	matchForecasts := []forecasts.Forecast{
 		{UserID: "user-1", Prediction: matches.Score{Home: 0, Away: 1}},
 		{UserID: "user-2", Prediction: matches.Score{Home: 2, Away: 0}},
@@ -40,7 +43,7 @@ func TestDetectSurprises(t *testing.T) {
 		{Type: AgainstTheCrowd, Actor: "user-1", Target: "France - Espagne"},
 	}
 
-	got := DetectSurprises(match, matchForecasts)
+	got := DetectSurprises(previous, match, matchForecasts)
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("DetectSurprises() = %#v, want %#v", got, want)
 	}
@@ -52,7 +55,7 @@ func TestDetectSurprisesIgnoresUnfinishedMatch(t *testing.T) {
 		PredictionStats: matches.PredictionStats{Home: 0.90, Away: 0.10},
 	}
 
-	if got := DetectSurprises(match, nil); len(got) != 0 {
+	if got := DetectSurprises(match, match, nil); len(got) != 0 {
 		t.Fatalf("DetectSurprises() returned %d opportunities, want 0", len(got))
 	}
 }
@@ -60,7 +63,22 @@ func TestDetectSurprisesIgnoresUnfinishedMatch(t *testing.T) {
 func TestDetectSurprisesIgnoresMissingPredictionStats(t *testing.T) {
 	match := matches.Match{Status: "fullTime"}
 
-	if got := DetectSurprises(match, nil); len(got) != 0 {
+	if got := DetectSurprises(matches.Match{}, match, nil); len(got) != 0 {
 		t.Fatalf("DetectSurprises() returned %d opportunities, want 0", len(got))
+	}
+}
+
+func TestDetectSurprisesDoesNotRepeatFinishedMatchOpportunities(t *testing.T) {
+	match := matches.Match{
+		MatchID:         "match-1",
+		HomeTeam:        "France",
+		AwayTeam:        "Espagne",
+		Status:          "fullTime",
+		Score:           matches.Score{Away: 1},
+		Quotations:      matches.Quotations{Home: 120, Away: 300},
+		PredictionStats: matches.PredictionStats{Home: 0.90, Away: 0.10},
+	}
+	if got := DetectSurprises(match, match, nil); len(got) != 0 {
+		t.Fatalf("DetectSurprises() returned %d repeated opportunities, want 0", len(got))
 	}
 }

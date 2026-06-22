@@ -55,3 +55,16 @@ func TestDetectCrowdIntelligenceRequiresSixtyPercent(t *testing.T) {
 		t.Fatalf("detectCrowdIntelligence() returned %d opportunities, want 0", len(got))
 	}
 }
+
+func TestDetectCrowdTransitionsOnlyWhenThresholdIsCrossed(t *testing.T) {
+	previous := matches.Match{HomeTeam: "France", PredictionStats: matches.PredictionStats{Home: 0.59, Away: 0.41}}
+	current := matches.Match{HomeTeam: "France", PredictionStats: matches.PredictionStats{Home: 0.60, Away: 0.40}}
+
+	want := []Opportunity{{Type: CrowdFavorite, Actor: "France", Target: "60%"}}
+	if got := detectCrowdTransitions(previous, current); !reflect.DeepEqual(got, want) {
+		t.Fatalf("detectCrowdTransitions() = %#v, want %#v", got, want)
+	}
+	if got := detectCrowdTransitions(current, current); len(got) != 0 {
+		t.Fatalf("detectCrowdTransitions() repeated %d opportunities, want 0", len(got))
+	}
+}

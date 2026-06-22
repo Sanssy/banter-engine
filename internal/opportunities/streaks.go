@@ -9,36 +9,58 @@ import (
 
 const minimumStreakLength = 5
 
-func DetectStreaks(history []forecasts.Forecast) []Opportunity {
-	byUser := make(map[string][]forecasts.Forecast)
-	for _, forecast := range history {
-		byUser[forecast.UserID] = append(byUser[forecast.UserID], forecast)
-	}
+func DetectStreaks(previous, current []forecasts.Forecast) []Opportunity {
+	previousStreaks := streaksByUser(previous)
+	currentStreaks := streaksByUser(current)
 
-	userIDs := make([]string, 0, len(byUser))
-	for userID := range byUser {
+	userIDs := make([]string, 0, len(currentStreaks))
+	for userID := range currentStreaks {
 		userIDs = append(userIDs, userID)
 	}
 	sort.Strings(userIDs)
 
 	var detected []Opportunity
 	for _, userID := range userIDs {
-		forecasts := byUser[userID]
-		sort.SliceStable(forecasts, func(i, j int) bool {
-			return forecasts[i].MatchDate.Before(forecasts[j].MatchDate)
-		})
-
-		streakType, length := activeStreak(forecasts)
-		if length >= minimumStreakLength {
-			detected = append(detected, Opportunity{
-				Type:   streakType,
-				Actor:  forecastUserName(forecasts[len(forecasts)-1]),
-				Target: strconv.Itoa(length),
-			})
+		currentStreak := currentStreaks[userID]
+		previousStreak := previousStreaks[userID]
+		if currentStreak.length < minimumStreakLength ||
+			(currentStreak.kind == previousStreak.kind && previousStreak.length >= minimumStreakLength) {
+			continue
 		}
+		detected = append(detected, Opportunity{
+			Type:   currentStreak.kind,
+			Actor:  currentStreak.userName,
+			Target: strconv.Itoa(currentStreak.length),
+		})
+	}
+	return detected
+}
+
+type streak struct {
+	kind     string
+	length   int
+	userName string
+}
+
+func streaksByUser(history []forecasts.Forecast) map[string]streak {
+	byUser := make(map[string][]forecasts.Forecast)
+	for _, forecast := range history {
+		byUser[forecast.UserID] = append(byUser[forecast.UserID], forecast)
 	}
 
-	return detected
+	result := make(map[string]streak, len(byUser))
+	for userID, userForecasts := range byUser {
+		sort.SliceStable(userForecasts, func(i, j int) bool {
+			return userForecasts[i].MatchDate.Before(userForecasts[j].MatchDate)
+		})
+		streakType, length := activeStreak(userForecasts)
+		result[userID] = streak{
+			kind:     streakType,
+			length:   length,
+			userName: forecastUserName(userForecasts[len(userForecasts)-1]),
+		}
+	}
+	return result
 }
 
 func activeStreak(history []forecasts.Forecast) (string, int) {
