@@ -20,20 +20,23 @@ type OllamaNarrator struct {
 	model    string
 	timeout  time.Duration
 	client   *http.Client
+	examples *narrative.Library
 	fallback DeterministicNarrator
 }
 
-func NewOllamaNarrator(url, model string, timeout time.Duration) *OllamaNarrator {
+func NewOllamaNarrator(url, model string, timeout time.Duration, examples *narrative.Library) *OllamaNarrator {
 	return &OllamaNarrator{
-		url:     strings.TrimRight(url, "/"),
-		model:   model,
-		timeout: timeout,
-		client:  &http.Client{Timeout: timeout},
+		url:      strings.TrimRight(url, "/"),
+		model:    model,
+		timeout:  timeout,
+		client:   &http.Client{Timeout: timeout},
+		examples: examples,
 	}
 }
 
 func (o *OllamaNarrator) Narrate(op opportunities.Opportunity, def catalog.OpportunityDefinition, angle narrative.Angle) string {
-	prompt := buildLivePrompt(op, def, angle)
+	examples := o.examples.Select(def.Category, angle, narrative.MaxExamples)
+	prompt := buildLivePrompt(op, def, angle, examples)
 	result, err := o.generate(prompt)
 	if err != nil || strings.TrimSpace(result) == "" {
 		return o.fallback.Narrate(op, def, angle)
@@ -42,7 +45,7 @@ func (o *OllamaNarrator) Narrate(op opportunities.Opportunity, def catalog.Oppor
 }
 
 func (o *OllamaNarrator) Summarize(ops []opportunities.Opportunity, cat *catalog.Catalog) string {
-	prompt := buildDigestPrompt(ops, cat)
+	prompt := buildDigestPrompt(ops, cat, o.selectDigestExamples(ops, cat))
 	result, err := o.generate(prompt)
 	if err != nil || strings.TrimSpace(result) == "" {
 		return o.fallback.Summarize(ops, cat)
@@ -87,7 +90,12 @@ func (o *OllamaNarrator) generate(prompt string) (string, error) {
 	return strings.TrimSpace(result.Response), nil
 }
 
-func buildLivePrompt(op opportunities.Opportunity, def catalog.OpportunityDefinition, angle narrative.Angle) string {
+func buildLivePrompt(
+	op opportunities.Opportunity,
+	def catalog.OpportunityDefinition,
+	angle narrative.Angle,
+	examples []narrative.Example,
+) string {
 	var sb strings.Builder
 	sb.WriteString("Tu es un commentateur de ligue de pronostics sportifs. ")
 	sb.WriteString("Reformule l'événement suivant en une phrase courte, naturelle et légèrement amusante en français. ")
@@ -106,11 +114,16 @@ func buildLivePrompt(op opportunities.Opportunity, def catalog.OpportunityDefini
 	if guidance := angle.Guidance(); guidance != "" {
 		sb.WriteString(fmt.Sprintf("Intention narrative : %s\n", guidance))
 	}
+	writeFewShotExamples(&sb, examples)
 	sb.WriteString("\nRéponds uniquement avec la phrase reformulée, sans explication.")
 	return sb.String()
 }
 
-func buildDigestPrompt(ops []opportunities.Opportunity, cat *catalog.Catalog) string {
+func buildDigestPrompt(
+	ops []opportunities.Opportunity,
+	cat *catalog.Catalog,
+	examples []narrative.Example,
+) string {
 	selected := notify.SelectTop(ops, cat, 8)
 
 	var sb strings.Builder
@@ -135,6 +148,67 @@ func buildDigestPrompt(ops []opportunities.Opportunity, cat *catalog.Catalog) st
 		sb.WriteString(line + "\n")
 	}
 
+	writeFewShotExamples(&sb, examples)
 	sb.WriteString("\nRéponds uniquement avec le digest mis en forme, sans explication.")
 	return sb.String()
+}
+
+func (o *OllamaNarrator) selectDigestExamples(
+	ops []opportunities.Opportunity,
+	cat *catalog.Catalog,
+) []narrative.Example {
+	selectedOps := notify.SelectTop(ops, cat, 8)
+	pools := make([][]narrative.Example, 0, len(selectedOps))
+	for _, op := range selectedOps {
+		definition, found := cat.FindByID(op.Type)
+		if !found {
+			continue
+		}
+		angle := narrative.ForOpportunity(op.Type)
+		candidates := o.examples.Select(definition.Category, angle, narrative.MaxExamples)
+		if len(candidates) > 0 {
+			pools = append(pools, candidates)
+		}
+	}
+
+	result := make([]narrative.Example, 0, narrative.MaxExamples)
+	seen := make(map[string]struct{}, narrative.MaxExamples)
+	for candidateIndex := 0; candidateIndex < narrative.MaxExamples; candidateIndex++ {
+		for _, candidates := range pools {
+			if candidateIndex >= len(candidates) {
+				continue
+			}
+			example := candidates[candidateIndex]
+			key := string(example.Angle) + "\x00" + example.Facts
+			if _, duplicate := seen[key]; duplicate {
+				continue
+			}
+			seen[key] = struct{}{}
+			result = append(result, example)
+			if len(result) == narrative.MaxExamples {
+				return result
+			}
+		}
+	}
+	return result
+}
+
+func writeFewShotExamples(sb *strings.Builder, examples []narrative.Example) {
+	if len(examples) == 0 {
+		return
+	}
+	if len(examples) > narrative.MaxExamples {
+		examples = examples[:narrative.MaxExamples]
+	}
+
+	sb.WriteString("\nExemples de style à suivre sans les copier mot pour mot :\n")
+	for index, example := range examples {
+		sb.WriteString(fmt.Sprintf(
+			"Exemple %d - faits : %s\nExemple %d - message : %s\n",
+			index+1,
+			example.Facts,
+			index+1,
+			example.Message,
+		))
+	}
 }

@@ -23,7 +23,10 @@ import (
 	"github.com/Sanssy/banter-engine/internal/snapshot"
 )
 
-const opportunityCatalogPath = "resources/opportunities.json"
+const (
+	opportunityCatalogPath = "resources/opportunities.json"
+	narrativeExamplesPath  = "resources/narratives/examples.json"
+)
 
 type Engine struct {
 	config         config.Config
@@ -47,6 +50,10 @@ func New(cfg config.Config, output io.Writer) (*Engine, error) {
 			return nil, fmt.Errorf("registered opportunity %q is missing from catalog", opportunityType)
 		}
 	}
+	narrativeLibrary, err := narrative.LoadLibrary(narrativeExamplesPath)
+	if err != nil {
+		return nil, err
+	}
 
 	var discordClient *discord.Client
 	if !cfg.DryRun {
@@ -56,7 +63,7 @@ func New(cfg config.Config, output io.Writer) (*Engine, error) {
 	var liveNarrator narrator.Narrator
 	var digestNar narrator.DigestNarrator
 	if cfg.OllamaEnabled {
-		ollamaNar := narrator.NewOllamaNarrator(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout)
+		ollamaNar := narrator.NewOllamaNarrator(cfg.OllamaURL, cfg.OllamaModel, cfg.OllamaTimeout, narrativeLibrary)
 		liveNarrator = ollamaNar
 		digestNar = ollamaNar
 	} else {

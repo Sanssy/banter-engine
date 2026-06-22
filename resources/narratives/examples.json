@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "examples": [
+    {
+      "category": "Crowd",
+      "angle": "CrowdWrong",
+      "facts": "92% des joueurs avaient choisi la Turquie, battue par le Paraguay.",
+      "message": "Les 8% restants peuvent commencer leur tour d'honneur."
+    },
+    {
+      "category": "Crowd",
+      "angle": "CrowdWrong",
+      "facts": "Aucun pronostic correct sur Équateur - Curaçao.",
+      "message": "Équateur - Curaçao vient de mettre toute la ligue hors-jeu."
+    },
+    {
+      "category": "Predictions",
+      "angle": "CrowdWrong",
+      "facts": "Le choix populaire s'effondre après un résultat inattendu.",
+      "message": "Le choix du peuple avait surtout choisi la mauvaise sortie."
+    },
+    {
+      "category": "Crowd",
+      "angle": "CrowdWrong",
+      "facts": "La majorité prévoyait une victoire du favori, le match finit nul.",
+      "message": "Le consensus était solide, jusqu'au coup de sifflet final."
+    },
+    {
+      "category": "MatchEvents",
+      "angle": "CrowdWrong",
+      "facts": "Un égaliseur tardif invalide presque tous les pronostics.",
+      "message": "Un but, et la sagesse collective perd soudain la mémoire."
+    },
+
+    {
+      "category": "Crowd",
+      "angle": "MinorityVictory",
+      "facts": "LeDaveCoinCoin est le seul à avoir trouvé le score exact.",
+      "message": "LeDaveCoinCoin avait le scénario, les autres avaient les popcorns."
+    },
+    {
+      "category": "Crowd",
+      "angle": "MinorityVictory",
+      "facts": "Trois joueurs sur quarante avaient choisi le Paraguay.",
+      "message": "Trois visionnaires, trente-sept demandes d'explication."
+    },
+    {
+      "category": "Predictions",
+      "angle": "MinorityVictory",
+      "facts": "Sandrine pronostique le nul contre l'avis général.",
+      "message": "Sandrine a quitté le troupeau juste avant le ravin."
+    },
+    {
+      "category": "Crowd",
+      "angle": "MinorityVictory",
+      "facts": "Une petite minorité anticipe le retournement du match.",
+      "message": "La minorité avait vu venir le virage avant tout le monde."
+    },
+    {
+      "category": "Narratives",
+      "angle": "MinorityVictory",
+      "facts": "Un outsider garde seul confiance dans son équipe.",
+      "message": "Seul contre tous, et surtout seul avec raison."
+    },
+
+    {
+      "category": "Predictions",
+      "angle": "FallFromGrace",
+      "facts": "Le grand favori Turquie perd contre le Paraguay.",
+      "message": "La Turquie était favorite. Le Paraguay n'avait visiblement pas lu la cote."
+    },
+    {
+      "category": "Ranking",
+      "angle": "FallFromGrace",
+      "facts": "ChaOli perd quatre places et quitte le podium.",
+      "message": "ChaOli descend du podium sans même prendre l'escalier."
+    },
+    {
+      "category": "MatchEvents",
+      "angle": "FallFromGrace",
+      "facts": "Un but à la 92e minute détruit le pronostic parfait de Luc.",
+      "message": "Luc tenait le score parfait. La 92e minute tenait une autre idée."
+    },
+    {
+      "category": "Predictions",
+      "angle": "FallFromGrace",
+      "facts": "La VAR annule le but qui validait le pronostic de Sandrine.",
+      "message": "Sandrine célébrait déjà, la VAR a demandé de rendre les points."
+    },
+    {
+      "category": "Ranking",
+      "angle": "FallFromGrace",
+      "facts": "Le leader subit la plus grosse perte de points de la journée.",
+      "message": "Le fauteuil de leader vient de découvrir les turbulences."
+    },
+
+    {
+      "category": "Ranking",
+      "angle": "Rise",
+      "facts": "Luc dépasse ChaOli et gagne deux places.",
+      "message": "Luc met le clignotant, dépasse ChaOli et poursuit sa montée."
+    },
+    {
+      "category": "Ranking",
+      "angle": "Rise",
+      "facts": "Sandrine entre dans le top 3 pour la première fois.",
+      "message": "Sandrine découvre le podium et semble vouloir y rester."
+    },
+    {
+      "category": "MatchEvents",
+      "angle": "Rise",
+      "facts": "Le Maroc renverse le score en seconde période.",
+      "message": "Le Maroc a retourné le match comme si la première période était un brouillon."
+    },
+    {
+      "category": "Predictions",
+      "angle": "Rise",
+      "facts": "Mira gagne 50 points grâce à un score exact.",
+      "message": "Mira vient de prendre 50 points et un peu d'altitude."
+    },
+    {
+      "category": "Narratives",
+      "angle": "Rise",
+      "facts": "Après plusieurs journées difficiles, un joueur revient au classement.",
+      "message": "On le croyait loin, le voilà de nouveau dans les rétroviseurs."
+    },
+
+    {
+      "category": "Predictions",
+      "angle": "Curse",
+      "facts": "LeDaveCoinCoin reste sur cinq pronostics ratés.",
+      "message": "Cinq échecs de suite : LeDaveCoinCoin collectionne les mauvais scénarios."
+    },
+    {
+      "category": "Narratives",
+      "angle": "Curse",
+      "facts": "Sylvain perd encore face au même rival.",
+      "message": "Même rival, même verdict : la série commence à avoir un abonnement."
+    },
+    {
+      "category": "Predictions",
+      "angle": "Curse",
+      "facts": "Un joueur manque un nouveau score exact à cause d'un but tardif.",
+      "message": "Encore un score parfait envolé : les dernières minutes s'acharnent."
+    },
+    {
+      "category": "Narratives",
+      "angle": "Curse",
+      "facts": "Une troisième défaite consécutive survient contre le même adversaire.",
+      "message": "Trois rencontres, trois défaites : ce duel ressemble désormais à une malédiction."
+    },
+    {
+      "category": "Ranking",
+      "angle": "Curse",
+      "facts": "Le dernier du classement ne gagne aucune place depuis quatre journées.",
+      "message": "Quatre journées plus tard, la dernière place connaît toujours son propriétaire."
+    },
+
+    {
+      "category": "Narratives",
+      "angle": "Dominance",
+      "facts": "Luc mène désormais sa rivalité cinq victoires à une.",
+      "message": "Cinq à un : Luc ne mène plus la rivalité, il la dirige."
+    },
+    {
+      "category": "Ranking",
+      "angle": "Dominance",
+      "facts": "Le leader creuse un écart de vingt points.",
+      "message": "Vingt points d'avance : le leader commence à voyager seul."
+    },
+    {
+      "category": "Predictions",
+      "angle": "Dominance",
+      "facts": "Sandrine enchaîne cinq pronostics réussis.",
+      "message": "Cinq bons pronostics de suite : Sandrine joue avec le corrigé."
+    },
+    {
+      "category": "Crowd",
+      "angle": "Dominance",
+      "facts": "95% des joueurs choisissent le Brésil.",
+      "message": "Le Brésil rassemble 95% des voix et presque autant de certitudes."
+    },
+    {
+      "category": "Ranking",
+      "angle": "Dominance",
+      "facts": "Le champion conserve la tête après une nouvelle journée.",
+      "message": "Une journée de plus, et le trône n'a toujours pas changé d'adresse."
+    }
+  ]
+}
