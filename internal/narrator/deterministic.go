@@ -3,6 +3,7 @@ package narrator
 import (
 	"github.com/Sanssy/banter-engine/internal/banter"
 	"github.com/Sanssy/banter-engine/internal/catalog"
+	"github.com/Sanssy/banter-engine/internal/narrative"
 	"github.com/Sanssy/banter-engine/internal/notify"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
@@ -10,7 +11,7 @@ import (
 // DeterministicNarrator uses existing template-based generation — always available.
 type DeterministicNarrator struct{}
 
-func (DeterministicNarrator) Narrate(op opportunities.Opportunity, def catalog.OpportunityDefinition) string {
+func (DeterministicNarrator) Narrate(op opportunities.Opportunity, def catalog.OpportunityDefinition, _ narrative.Angle) string {
 	return banter.GenerateWithDefinition(op, def)
 }
 

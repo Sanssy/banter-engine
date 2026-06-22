@@ -9,17 +9,18 @@ import (
 	"time"
 
 	"github.com/Sanssy/banter-engine/internal/catalog"
+	"github.com/Sanssy/banter-engine/internal/narrative"
 	"github.com/Sanssy/banter-engine/internal/notify"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
 )
 
 // OllamaNarrator calls a local Ollama instance and falls back to DeterministicNarrator on any failure.
 type OllamaNarrator struct {
-	url       string
-	model     string
-	timeout   time.Duration
-	client    *http.Client
-	fallback  DeterministicNarrator
+	url      string
+	model    string
+	timeout  time.Duration
+	client   *http.Client
+	fallback DeterministicNarrator
 }
 
 func NewOllamaNarrator(url, model string, timeout time.Duration) *OllamaNarrator {
@@ -31,11 +32,11 @@ func NewOllamaNarrator(url, model string, timeout time.Duration) *OllamaNarrator
 	}
 }
 
-func (o *OllamaNarrator) Narrate(op opportunities.Opportunity, def catalog.OpportunityDefinition) string {
-	prompt := buildLivePrompt(op, def)
+func (o *OllamaNarrator) Narrate(op opportunities.Opportunity, def catalog.OpportunityDefinition, angle narrative.Angle) string {
+	prompt := buildLivePrompt(op, def, angle)
 	result, err := o.generate(prompt)
 	if err != nil || strings.TrimSpace(result) == "" {
-		return o.fallback.Narrate(op, def)
+		return o.fallback.Narrate(op, def, angle)
 	}
 	return result
 }
@@ -86,7 +87,7 @@ func (o *OllamaNarrator) generate(prompt string) (string, error) {
 	return strings.TrimSpace(result.Response), nil
 }
 
-func buildLivePrompt(op opportunities.Opportunity, def catalog.OpportunityDefinition) string {
+func buildLivePrompt(op opportunities.Opportunity, def catalog.OpportunityDefinition, angle narrative.Angle) string {
 	var sb strings.Builder
 	sb.WriteString("Tu es un commentateur de ligue de pronostics sportifs. ")
 	sb.WriteString("Reformule l'événement suivant en une phrase courte, naturelle et légèrement amusante en français. ")
@@ -100,6 +101,10 @@ func buildLivePrompt(op opportunities.Opportunity, def catalog.OpportunityDefini
 	}
 	if op.Target != "" {
 		sb.WriteString(fmt.Sprintf("Cible / contexte : %s\n", op.Target))
+	}
+	sb.WriteString(fmt.Sprintf("Angle narratif : %s\n", angle))
+	if guidance := angle.Guidance(); guidance != "" {
+		sb.WriteString(fmt.Sprintf("Intention narrative : %s\n", guidance))
 	}
 	sb.WriteString("\nRéponds uniquement avec la phrase reformulée, sans explication.")
 	return sb.String()

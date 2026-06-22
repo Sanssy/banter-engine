@@ -14,6 +14,7 @@ import (
 	"github.com/Sanssy/banter-engine/internal/logging"
 	matchmodel "github.com/Sanssy/banter-engine/internal/matches"
 	"github.com/Sanssy/banter-engine/internal/mpp"
+	"github.com/Sanssy/banter-engine/internal/narrative"
 	"github.com/Sanssy/banter-engine/internal/narrator"
 	"github.com/Sanssy/banter-engine/internal/notify"
 	"github.com/Sanssy/banter-engine/internal/opportunities"
@@ -25,14 +26,14 @@ import (
 const opportunityCatalogPath = "resources/opportunities.json"
 
 type Engine struct {
-	config        config.Config
-	mpp           *mpp.Client
-	discord       *discord.Client
-	catalog       *catalog.Catalog
-	logger        *logging.Logger
-	output        io.Writer
-	resolver      *references.Resolver
-	narrator      narrator.Narrator
+	config         config.Config
+	mpp            *mpp.Client
+	discord        *discord.Client
+	catalog        *catalog.Catalog
+	logger         *logging.Logger
+	output         io.Writer
+	resolver       *references.Resolver
+	narrator       narrator.Narrator
 	digestNarrator narrator.DigestNarrator
 }
 
@@ -261,7 +262,11 @@ func (e *Engine) publishLiveDigest(detected []opportunities.Opportunity) error {
 		if !found {
 			return fmt.Errorf("unknown opportunity %q", opportunity.Type)
 		}
-		message := e.narrator.Narrate(opportunity, definition)
+		angle := narrative.ForOpportunity(opportunity.Type)
+		if angle == "" {
+			return fmt.Errorf("opportunity %q has no narrative angle", opportunity.Type)
+		}
+		message := e.narrator.Narrate(opportunity, definition, angle)
 		if err := e.publish(message); err != nil {
 			return err
 		}
